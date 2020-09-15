@@ -5,13 +5,12 @@ import pandas as pd
 
 
 class AptList:
-
-    def __init__(self, url, key):
-        self.items = []
+    def __init__(self,  key):
+        self.items = ''
         self._dong_names = []
         self._kapt_codes = []
         self._kapt_names = []
-        self._callback_url = url
+        self._callback_url = 'http://apis.data.go.kr/1611000/AptListService/getLegaldongAptList'
         self._service_key = key
 
     def _create_url(self):
@@ -33,7 +32,7 @@ class AptList:
             self._kapt_codes.append(item.find('kaptcode').string)
             self._kapt_names.append(item.find('kaptname').string)
 
-    def _query_dong(self, bjd_code, dong_name):
+    def _query(self, bjd_code, dong_name):
         self._bjd_code = bjd_code
         self._dong_name = dong_name
         self._create_url()
@@ -53,9 +52,9 @@ class AptList:
             dong_name = dong_name_full.split(' ')[-1]
             if dong_name in target_dongs:
                 bjd_code = self._bjd_code_df['bjd_code'].iloc[index]
-                self._query_dong(bjd_code, dong_name)
+                self._query(bjd_code, dong_name)
 
-        self.items = pd.DataFrame({'code': self._kapt_codes, 'name': self._kapt_names, 'dong': self._dong_names})
+        self.items = pd.DataFrame({'단지코드': self._kapt_codes, '단지명': self._kapt_names, '법정': self._dong_names})
 
 
 
