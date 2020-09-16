@@ -46,15 +46,21 @@ class AptList:
 
         self._bjd_code_df = bjd_code_df.loc[bjd_code_df['valid'] == '존재', :]
 
-    def get(self, bjd_file, target_dongs):
+    def get(self, bjd_file, target_gus, target_dongs):
         self._get_bjd_code(bjd_file)
         for index, dong_name_full in enumerate(self._bjd_code_df['dong_name']):
+            gu_name = dong_name_full.split(' ')[2]
             dong_name = dong_name_full.split(' ')[-1]
-            if dong_name in target_dongs:
+            is_query = False
+            if len(target_gus) > 0:
+                if gu_name in target_gus:
+                    is_query = True
+            else:
+                if dong_name in target_dongs:
+                    is_query = True
+
+            if is_query:
                 bjd_code = self._bjd_code_df['bjd_code'].iloc[index]
                 self._query(bjd_code, dong_name)
 
         self.items = pd.DataFrame({'단지코드': self._kapt_codes, '단지명': self._kapt_names, '법정': self._dong_names})
-
-
-
