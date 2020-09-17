@@ -4,6 +4,7 @@
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
 import aptList as al
 import aptInfo as ai
+import elecPlace as ep
 import elecCode as el
 import pandas as pd
 import openpyxl
@@ -28,7 +29,7 @@ if apt_bool:
     # Get Apt List
     aptList = al.AptList(service_key)
 
-    bjd_file = './conf/yi_bjd_code.txt'
+    bjd_file = './conf/법정동 코드(용인시).txt'
     target_dongs = ['구갈']
     # target_dongs = ['동백동', '중동', '마북동', '보정동']
     target_gus = ['기흥구', '수지구', '처인구']
@@ -49,10 +50,14 @@ if apt_bool:
     # apt_infos = pd.concat(aptList.items, aptInfo.items, axis=1)
     apt_infos = pd.merge(aptList.items, aptInfo.items, on='단지코드')
     # apt_infos['단지명 일치'] = apt_infos['단지명'] == apt_infos['단지명2']
-    apt_infos.to_excel('aptInfo.xlsx', sheet_name='code')
+    apt_infos.to_excel('공동주택 현황(용인시).xlsx', sheet_name='code')
     print(apt_infos)
 
 # elec_list = el.ElecCode(service_key)
 # elec_list.get()
 # print(elec_list.items)
 # elec_list.items.to_excel('elecCode_sg.xlsx', sheet_name='sg')
+elec_place = ep.ElecPlace()
+elec_place.decode()
+print(elec_place.items)
+elec_place.items.to_excel('투표소 현.xlsx', sheet_name='place')
