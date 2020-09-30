@@ -2,15 +2,15 @@ import pandas as pd
 
 class ElecPlace:
     def __init__(self):
-        self.df = pd.read_excel('conf/투표구 관할구역(용인시정).xlsx', sheet_name='2020년 제21대 국회의원선거', skiprows=2)
+        self.df = pd.read_excel('conf/용인시 투표구 관할구역.xlsx', sheet_name='2020년 제21대 국회의원선거', skiprows=2)
 
     def decode(self):
         key_gu = '구·시·군명'
         key_place = '투표소명'
         key_region = '투표구 관할구역'
-        key_place_dong = '투표소 동'
-        key_dong = '투표구 동'
-        key_tong = '투표구 통'
+        key_place_dong = '행정동'
+        key_dong = '법정동'
+        key_tong = '통'
         infos = {key_gu: [], key_place: [], key_place_dong: [], key_dong: [], key_tong: []}
         for index in range(len(self.df)):
             # one_row = self.df.iloc[[index], :]

@@ -8,10 +8,11 @@ class AptInfo:
     def __init__(self, key):
         self._callback_url = 'http://apis.data.go.kr/1611000/AptBasisInfoService/getAphusBassInfo'
         self._service_key = key
+        self._kapt_code = ''
         self.items = []
         self.infos = {
             '단지코드': [],
-            # '단지명2': [],
+            '단지명': [],
             '단지분류': [],
             '법정동주소': [],
             '도로명주소': [],
@@ -34,7 +35,10 @@ class AptInfo:
             '홈페이지 주소': [],
             '건축물대장상 연면적': [],
             '관리비부과면적': [],
-            '단지 전용면적합': []}
+            '단지 전용면적합': [],
+            '간략 법정동주소': [],
+            '간략 도로명주소': []
+        }
 
     def _create_url(self):
         query_params = '?' + urlencode(
@@ -59,9 +63,9 @@ class AptInfo:
         self._pretty_soup = self._soup.prettify()
         print(self._pretty_soup)
         self._append_info('단지코드', 'kaptcode')
-        # self._append_info('단지명2', 'kaptname')
+        self._append_info('단지명', 'kaptname')
         self._append_info('단지분류', 'codeaptnm')
-        self._append_info('법정동주소', 'kaptaddr')
+        # self._append_info('법정동주소', 'kaptaddr')
         self._append_info('도로명주소', 'dorojuso')
         self._append_info('분양형태', 'codesalenm')
         self._append_info('난방방식', 'codeheatnm')
@@ -84,14 +88,27 @@ class AptInfo:
         self._append_info('관리비부과면적', 'kaptmarea')
         self._append_info('단지 전용면적합', 'privarea')
 
+    def _get_bjd_addr(self):
+        kaptname = self._soup.find('kaptname').string
+        kaptaddr = self._soup.find('kaptaddr').string
+        kaptaddr = kaptaddr.replace('경기도 용인', '경기도 용인시 ')
+        bjdaddr = kaptaddr.replace('경기도 용인시 ', '')
+        bjdaddr = bjdaddr.replace(kaptname, '').strip()
+        self.infos['법정동주소'].append(kaptaddr)
+        self.infos['간략 법정동주소'].append(bjdaddr)
+        doroaddr = self._soup.find('dorojuso').string
+        if doroaddr is not "":
+            doroaddr = doroaddr.replace('경기도 용인시 ', '').strip()
+        self.infos['간략 도로명주소'].append(doroaddr)
+
     def _query(self):
         self._create_url()
         self._request()
         self._parse_xml()
+        self._get_bjd_addr()
 
     def get(self, kapt_code_df):
         for kapt_code in kapt_code_df:
             self._kapt_code = kapt_code
             self._query()
         self.items = pd.DataFrame(self.infos)
-        print(self.infos)

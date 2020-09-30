@@ -63,4 +63,5 @@ class AptList:
                 bjd_code = self._bjd_code_df['bjd_code'].iloc[index]
                 self._query(bjd_code, dong_name)
 
-        self.items = pd.DataFrame({'단지코드': self._kapt_codes, '단지명': self._kapt_names, '법정': self._dong_names})
+        # self.items = pd.DataFrame({'단지코드': self._kapt_codes, '단지명': self._kapt_names, '법정동': self._dong_names})
+        self.items = pd.DataFrame({'단지코드': self._kapt_codes, '법정동': self._dong_names})
