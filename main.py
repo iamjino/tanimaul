@@ -6,12 +6,14 @@ import aptList as al
 import aptInfo as ai
 import aptPrice as ap
 import elecPlace as ep
-import aptInfoMerge as ai2
+import elecZone as ez
+import aptInfoMerge as am
 import elecCode as el
 import pandas as pd
 import openpyxl
 
 import requests
+
 
 def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
@@ -55,10 +57,10 @@ if False:
     print(apt_infos)
 
 if False:
-    apt_info2 = ai2.AptInfoMerge()
+    apt_info2 = am.AptInfoMerge()
     apt_info2.run()
 
-if True:
+if False:
     apt_price = ap.AptPrice(service_key)
     target_gus = ['기흥구', '수지구']
     apt_price.get(target_gus, 2019, 10, 2020, 1)
@@ -73,6 +75,10 @@ if False:
     print(elec_place.items)
     elec_place.items.to_excel('투표구 관할구역.xlsx', sheet_name='place')
 
+if True:
+    elec_zone = ez.elecZone()
+    elec_zone.load_detail()
+
 if False:
     from bs4 import BeautifulSoup
     import urllib.request as req
@@ -86,3 +92,5 @@ if False:
     for a in list:
         name = a.string
         print(name)
+
+

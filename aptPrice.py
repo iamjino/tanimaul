@@ -90,7 +90,6 @@ class AptPrice:
         deal_ymds = self._get_ymd(start_year, start_month, end_year, end_month)
         for gu_name in gu_names:
             for deal_ymd in deal_ymds:
-                # deal_ymd = '201912'
                 self._query(gu_name, deal_ymd)
                 self.items = pd.DataFrame(self.infos)
                 self.items.to_excel('아파트 매매 실거래가.xlsx', sheet_name='deal')
