@@ -35,9 +35,7 @@ class AptInfo:
             '홈페이지 주소': [],
             '건축물대장상 연면적': [],
             '관리비부과면적': [],
-            '단지 전용면적합': [],
-            '간략 법정동주소': [],
-            '간략 도로명주소': []
+            '단지 전용면적합': []
         }
 
     def _create_url(self):
@@ -56,12 +54,12 @@ class AptInfo:
         if isinstance(value, type(None)):
             value = ''
         else:
-            value = value.string
+            value = value.string.strip()
         self.infos[key].append(value)
 
     def _parse_xml(self):
         self._pretty_soup = self._soup.prettify()
-        print(self._pretty_soup)
+        # print(self._pretty_soup)
         self._append_info('단지코드', 'kaptcode')
         self._append_info('단지명', 'kaptname')
         self._append_info('단지분류', 'codeaptnm')
@@ -92,14 +90,8 @@ class AptInfo:
         kaptname = self._soup.find('kaptname').string
         kaptaddr = self._soup.find('kaptaddr').string
         kaptaddr = kaptaddr.replace('경기도 용인', '경기도 용인시 ')
-        bjdaddr = kaptaddr.replace('경기도 용인시 ', '')
-        bjdaddr = bjdaddr.replace(kaptname, '').strip()
+        kaptaddr = kaptaddr.replace(kaptname, '').strip()
         self.infos['법정동주소'].append(kaptaddr)
-        self.infos['간략 법정동주소'].append(bjdaddr)
-        doroaddr = self._soup.find('dorojuso').string
-        if doroaddr is not "":
-            doroaddr = doroaddr.replace('경기도 용인시 ', '').strip()
-        self.infos['간략 도로명주소'].append(doroaddr)
 
     def _query(self):
         self._create_url()
