@@ -4,6 +4,7 @@
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
 import aptList as al
 import aptInfo as ai
+import aptPrice as ap
 import elecPlace as ep
 import aptInfoMerge as ai2
 import elecCode as el
@@ -53,9 +54,14 @@ if False:
     apt_infos.to_excel('공동주택 현황.xlsx', sheet_name='code')
     print(apt_infos)
 
-if True:
+if False:
     apt_info2 = ai2.AptInfoMerge()
     apt_info2.run()
+
+if True:
+    apt_price = ap.AptPrice(service_key)
+    target_gus = ['기흥구', '수지구']
+    apt_price.get(target_gus, 2019, 10, 2020, 1)
 
 if False:
     # elec_list = el.ElecCode(service_key)
