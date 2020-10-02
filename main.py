@@ -56,9 +56,9 @@ if False:
     apt_infos.to_excel('공동주택 현황.xlsx', sheet_name='code')
     print(apt_infos)
 
-if False:
-    apt_info2 = am.AptInfoMerge()
-    apt_info2.run()
+if True:
+    apt_info_merge = am.AptInfoMerge()
+    apt_info_merge.run()
 
 if False:
     apt_price = ap.AptPrice(service_key)
@@ -75,7 +75,7 @@ if False:
     print(elec_place.items)
     elec_place.items.to_excel('투표구 관할구역.xlsx', sheet_name='place')
 
-if True:
+if False:
     elec_zone = ez.elecZone()
     elec_zone.load_detail()
 
