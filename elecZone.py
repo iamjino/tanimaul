@@ -2,13 +2,13 @@ import pandas as pd
 
 class elecZone:
     def __init__(self):
-        self.a = 1
+        self._elec_place = pd.read_excel('투표구 관할구역.xlsx', sheet_name='place')
         pass
 
     def load_detail(self):
-        detail_zone = pd.read_excel('conf/용인시 통리반 명칭 및 관할구역.xlsx', sheet_name='step1', index_col=None)
-        print(detail_zone.shape)
-        temp1 = detail_zone[['개정일', '행정동', '통명', '건물', '법정동', '통', '반', '읍면동', '통리명', '반의명칭', '관할구역']]
+        raw_zone = pd.read_excel('conf/용인시 통리반 관할구역.xlsx', sheet_name='step1', index_col=None)
+        print(raw_zone.shape)
+        temp1 = raw_zone[['개정일', '행정동', '통명', '건물', '법정동', '통', '반', '읍면동', '통리명', '반의명칭', '관할구역']]
         print(temp1)
         print(temp1.shape)
 
@@ -21,13 +21,23 @@ class elecZone:
 
         temp1['주소'] = ''
         print(temp1.index.size)
-        temp3 = temp1.reset_index(drop=True)
-        for i in range(temp3.index.size):
-            texts = temp3.at[i, '관할구역'].split(' ')
+        tong_addr = temp1.reset_index(drop=True)
+        dong_changes = ['죽전1동', '상현2동']
+        for i in range(tong_addr.index.size):
+            texts = tong_addr.at[i, '관할구역'].split(' ')
             addr = texts[0] + ' ' + texts[1]
-            temp3.at[i, '주소'] = addr
+            tong_addr.at[i, '주소'] = addr
+            tong_addr.at[i, '법정동'] = tong_addr.at[i, '법정동'] + '동'
+            for dong_change in dong_changes:
+                if tong_addr.at[i, '행정동'] == dong_change:
+                    tong_addr.at[i, '법정동'] = dong_change
 
-        print(temp3)
-        temp3.to_excel('result.xlsx', sheet_name='zone')
-        # print(temp1.columns)
-        # print(temp1.index)
+        print(tong_addr)
+        tong_addr['투표소명'] = ''
+        for i in range(tong_addr.index.size):
+            dong = self._elec_place['법정동'] == tong_addr.at[i, '법정동']
+            tong = self._elec_place['통'] == tong_addr.at[i, '통']
+            df_place = self._elec_place[dong & tong].reset_index(drop=True)
+            if(df_place.size > 0):
+                tong_addr.at[i, '투표소명'] = df_place.at[0, '투표소명']
+        tong_addr.to_excel('result.xlsx', sheet_name='zone')

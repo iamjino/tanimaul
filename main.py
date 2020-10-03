@@ -40,23 +40,22 @@ if False:
     aptList.get(bjd_file, target_gus, target_dongs)
     print(aptList.items)
 
-    # Get Apt Info
-    aptInfo = ai.AptInfo(service_key)
-    print(aptInfo.items)
-
     apt_codes = aptList.items['단지코드']
     # apt_codes = ['A44691615', 'A44679103']
     print(apt_codes)
 
+    # Get Apt Info
+    aptInfo = ai.AptInfo(service_key)
+    print(aptInfo.items)
     aptInfo.get(apt_codes)
 
     # apt_infos = pd.concat(aptList.items, aptInfo.items, axis=1)
     apt_infos = pd.merge(aptList.items, aptInfo.items, on='단지코드')
     # apt_infos['단지명 일치'] = apt_infos['단지명'] == apt_infos['단지명2']
-    apt_infos.to_excel('공동주택 현황.xlsx', sheet_name='code')
+    apt_infos.to_excel('KAPT 공동주택 현황.xlsx', sheet_name='code')
     print(apt_infos)
 
-if True:
+if False:
     apt_info_merge = am.AptInfoMerge()
     apt_info_merge.run()
 
@@ -75,7 +74,7 @@ if False:
     print(elec_place.items)
     elec_place.items.to_excel('투표구 관할구역.xlsx', sheet_name='place')
 
-if False:
+if True:
     elec_zone = ez.elecZone()
     elec_zone.load_detail()
 
