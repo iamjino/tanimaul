@@ -92,4 +92,4 @@ class AptPrice:
             for deal_ymd in deal_ymds:
                 self._query(gu_name, deal_ymd)
                 self.items = pd.DataFrame(self.infos)
-                self.items.to_excel('아파트 매매 실거래가.xlsx', sheet_name='deal')
+                self.items.to_excel('doc/아파트 매매 실거래가.xlsx', sheet_name='deal')

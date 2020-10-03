@@ -22,7 +22,7 @@ class AptInfoMerge:
         print('yicity:', self.yicity.index.size)
 
     def load_kapt(self):
-        self.kapt = pd.read_excel('KAPT 공동주택 현황.xlsx', sheet_name='code')
+        self.kapt = pd.read_excel('doc/KAPT 공동주택 현황.xlsx', sheet_name='code')
         bugfix = pd.read_excel('conf/KAPT 공동주택 현황-수정.xlsx', sheet_name='apt')
         for b in range(bugfix.index.size):
             code = bugfix.at[b, '단지코드']
@@ -120,4 +120,4 @@ class AptInfoMerge:
                                                   }, ignore_index=True)
 
         print(bothmatch, dormatch, bjdmatch, nomatch)
-        self.merged.to_excel('공동주택 현황(병합).xlsx', sheet_name='apt')
+        self.merged.to_excel('doc/공동주택 현황.xlsx', sheet_name='apt')
