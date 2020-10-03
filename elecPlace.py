@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 class ElecPlace:
     def __init__(self):
         self.df = pd.read_excel('conf/용인시 투표구 관할구역.xlsx', sheet_name='2020년 제21대 국회의원선거', skiprows=2)

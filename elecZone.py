@@ -9,8 +9,8 @@ class elecZone:
     def load_detail(self):
         yi_zone = pd.read_excel('conf/용인시 통리반 관할구역.xlsx', sheet_name='step1', index_col=None)
         temp1 = yi_zone[['개정일', '행정동', '통명', '건물', '법정동', '통', '반', '읍면동', '통리명', '반의명칭', '관할구역']]
-        temp1 = temp1[temp1['반의명칭'].isna() == False]
-        temp1 = temp1[temp1['건물'].isna() == False]
+        temp1 = temp1[temp1['반의명칭'].notnull()]
+        temp1 = temp1[temp1['건물'].notnull()]
 
         yi_zone_fix = pd.read_excel('conf/용인시 통리반 관할구역-수정.xlsx', sheet_name='zone', index_col=None)
         addr_replace = yi_zone_fix[yi_zone_fix['타입'] == 'replace'].reset_index(drop=True)
