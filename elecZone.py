@@ -61,7 +61,7 @@ class elecZone:
         tong_addr['단지명'] = ''
         for i in range(tong_addr.index.size):
             addr = tong_addr.at[i, '주소']
-            is_addr = self._apt_info['간략 법정동주소'].str.contains(addr)
+            is_addr = self._apt_info['동이하주소'] == addr
             df_apt = self._apt_info[is_addr].reset_index(drop=True)
             if df_apt.size > 0:
                 tong_addr.at[i, '단지명'] = df_apt.at[0, '단지명']

@@ -38,7 +38,7 @@ class AptInfoMerge:
         self.kapt['간략 도로명주소'] = self.kapt['도로명주소'].str.replace('경기도 용인시 ', '')
         self.kapt['bjdaddr'] = self.kapt['간략 법정동주소'].str.replace(' ', '')
         self.kapt['doraddr'] = self.kapt['간략 도로명주소'].str.replace(' ', '')
-        print('kapt:', self.kapt.index.size)
+        self.kapt['동이하주소'] = ''
 
         self.merged = self.kapt.copy()
         self.merged['용인시 법정동주소'] = ''
@@ -118,6 +118,12 @@ class AptInfoMerge:
                                                   '세대수': yicity_cnt,
                                                   '관리사무소 연락처': yicity_tel
                                                   }, ignore_index=True)
+
+        for k in range(self.merged.index.size):
+            addrs = self.merged.at[k, '간략 법정동주소'].split(' ')
+            del addrs[0]
+            text = ' '.join(addrs)
+            self.merged.at[k, '동이하주소'] = text
 
         print(bothmatch, dormatch, bjdmatch, nomatch)
         self.merged.to_excel('doc/공동주택 현황.xlsx', sheet_name='apt')
