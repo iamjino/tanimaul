@@ -1,12 +1,12 @@
 import pandas as pd
 
 class AptInfoMerge:
-    def __init__(self):
-        self.load_yicity()
-        self.load_kapt()
+    def __init__(self, conf_yiapt_list_file, conf_yiapt_list_sheet, doc_kapt_list, conf_kapt_list_fix):
+        self.load_yicity(conf_yiapt_list_file, conf_yiapt_list_sheet)
+        self.load_kapt(doc_kapt_list, conf_kapt_list_fix)
 
-    def load_yicity(self):
-        self.yicity = pd.read_excel('conf/용인시 공동주택 현황.xlsx', sheet_name='summary')
+    def load_yicity(self, conf_yiapt_list_file, conf_yiapt_list_sheet):
+        self.yicity = pd.read_excel(conf_yiapt_list_file, sheet_name=conf_yiapt_list_sheet)
         self.yicity['간략 법정동주소'] = self.yicity["법정동주소"].str.replace(pat="1동", repl="동")
         self.yicity['간략 법정동주소'] = self.yicity['간략 법정동주소'].str.replace(pat="2동", repl="동")
         self.yicity['간략 법정동주소'] = self.yicity['간략 법정동주소'].str.strip()
@@ -21,9 +21,9 @@ class AptInfoMerge:
         self.yicity['doraddr'] = self.yicity['간략 도로명주소'].str.replace(' ', '')
         print('yicity:', self.yicity.index.size)
 
-    def load_kapt(self):
-        self.kapt = pd.read_excel('doc/KAPT 공동주택 현황.xlsx', sheet_name='code')
-        bugfix = pd.read_excel('conf/KAPT 공동주택 현황-수정.xlsx', sheet_name='apt')
+    def load_kapt(self, doc_kapt_list, conf_kapt_list_fix):
+        self.kapt = pd.read_excel(doc_kapt_list)
+        bugfix = pd.read_excel(conf_kapt_list_fix)
         for b in range(bugfix.index.size):
             code = bugfix.at[b, '단지코드']
             indexes = self.kapt.index[self.kapt['단지코드'] == code]
@@ -40,15 +40,15 @@ class AptInfoMerge:
         self.kapt['doraddr'] = self.kapt['간략 도로명주소'].str.replace(' ', '')
         self.kapt['동이하주소'] = ''
 
-        self.merged = self.kapt.copy()
-        self.merged['용인시 법정동주소'] = ''
-        self.merged['용인시 도로명주소'] = ''
-        self.merged['용인시 불일치'] = ''
-        self.merged['용인시 세대수'] = ''
-        self.merged['세대수 차이'] = ''
-        self.merged['용인시 단지명'] = ''
+        self.items = self.kapt.copy()
+        self.items['용인시 법정동주소'] = ''
+        self.items['용인시 도로명주소'] = ''
+        self.items['용인시 불일치'] = ''
+        self.items['용인시 세대수'] = ''
+        self.items['세대수 차이'] = ''
+        self.items['용인시 단지명'] = ''
 
-        print(self.merged)
+        print(self.items)
 
     def run(self):
         bothmatch = 0
@@ -68,12 +68,12 @@ class AptInfoMerge:
                 kapt_bjd = self.kapt.at[k, 'bjdaddr']
                 if not dor:
                     if kapt_dor == yicity_dor:
-                        if self.merged.at[k, '용인시 불일치'] == '':
+                        if self.items.at[k, '용인시 불일치'] == '':
                             dor = True
                             k_index = k
                 if not bjd:
                     if kapt_bjd == yicity_bjd:
-                        if self.merged.at[k, '용인시 불일치'] == '':
+                        if self.items.at[k, '용인시 불일치'] == '':
                             bjd = True
                             k_index = k
 
@@ -81,22 +81,22 @@ class AptInfoMerge:
             yicity_bjdaddr = self.yicity.at[y, '간략 법정동주소'].strip()
             yicity_doraddr = self.yicity.at[y, '간략 도로명주소'].strip()
             if dor or bjd:
-                self.merged.at[k_index, '용인시 단지명'] = yicity_name
-                self.merged.at[k_index, '용인시 법정동주소'] = yicity_bjdaddr
-                self.merged.at[k_index, '용인시 도로명주소'] = yicity_doraddr
-                self.merged.at[k_index, '용인시 세대수'] = yicity_cnt
-                if self.merged.at[k_index, '세대수'] != yicity_cnt:
-                    self.merged.at[k_index, '세대수 차이'] = self.merged.at[k_index, '세대수'] - yicity_cnt
+                self.items.at[k_index, '용인시 단지명'] = yicity_name
+                self.items.at[k_index, '용인시 법정동주소'] = yicity_bjdaddr
+                self.items.at[k_index, '용인시 도로명주소'] = yicity_doraddr
+                self.items.at[k_index, '용인시 세대수'] = yicity_cnt
+                if self.items.at[k_index, '세대수'] != yicity_cnt:
+                    self.items.at[k_index, '세대수 차이'] = self.items.at[k_index, '세대수'] - yicity_cnt
 
                 if dor and bjd:
                     bothmatch += 1
-                    self.merged.at[k_index, '용인시 불일치'] = '주소 모두 일치'
+                    self.items.at[k_index, '용인시 불일치'] = '주소 모두 일치'
                 elif dor:
                     dormatch += 1
-                    self.merged.at[k_index, '용인시 불일치'] = '법정동주소 불일치'
+                    self.items.at[k_index, '용인시 불일치'] = '법정동주소 불일치'
                 else:
                     bjdmatch += 1
-                    self.merged.at[k_index, '용인시 불일치'] = '도로명주소 불일치'
+                    self.items.at[k_index, '용인시 불일치'] = '도로명주소 불일치'
             else:
                 nomatch += 1
                 yicity_bjdfull = '경기도 용인시 ' + yicity_bjdaddr
@@ -104,7 +104,7 @@ class AptInfoMerge:
 
                 yicity_tel = self.yicity.at[y, '관리사무소 전화번호']
                 yicity_sale = self.yicity.at[y, '분양형태'].strip()
-                self.merged = self.merged.append({'용인시 법정동주소': yicity_bjdaddr,
+                self.items = self.items.append({'용인시 법정동주소': yicity_bjdaddr,
                                                   '용인시 도로명주소': yicity_doraddr,
                                                   'bjdaddr': yicity_bjd,
                                                   'doraddr': yicity_dor,
@@ -115,15 +115,17 @@ class AptInfoMerge:
                                                   '단지명': yicity_name,
                                                   '용인시 단지명': yicity_name,
                                                   '분양형태': yicity_sale,
-                                                  '세대수': yicity_cnt,
-                                                  '관리사무소 연락처': yicity_tel
-                                                  }, ignore_index=True)
+                                                '세대수': yicity_cnt,
+                                                '관리사무소 연락처': yicity_tel
+                                                }, ignore_index=True)
 
-        for k in range(self.merged.index.size):
-            addrs = self.merged.at[k, '간략 법정동주소'].split(' ')
+        for k in range(self.items.index.size):
+            addrs = self.items.at[k, '간략 법정동주소'].split(' ')
             del addrs[0]
             text = ' '.join(addrs)
-            self.merged.at[k, '동이하주소'] = text
+            self.items.at[k, '동이하주소'] = text
 
         print(bothmatch, dormatch, bjdmatch, nomatch)
-        self.merged.to_excel('doc/공동주택 현황.xlsx', sheet_name='apt')
+
+    def to_excel(self, xlsx_name, sheet_name='sheet1'):
+        self.items.to_excel(xlsx_name, sheet_name=sheet_name)

@@ -29,16 +29,43 @@ if __name__ == '__main__':
 service_key = 'wRaEeY%2BpbPZX3OjIYLLt74uO5%2BAY7DXQJ9MWyyGodai94K7JvfjtLL%2FTRzkFuMxfb6SmuGqcM2YSCcVa4V1KeQ%3D%3D'
 service_key = requests.utils.unquote(service_key)
 
+# files = {'conf_bjd_code': './conf/용인시 법정동 코드.txt',
+#          'conf_yiapt_list_file': 'conf/용인시 공동주택 현황.xlsx',
+#          'conf_yiapt_list_sheet': 'summary',
+#          'doc_kapt_list': 'doc/KAPT 공동주택 현황.xlsx',
+#          'conf_kapt_list_fix': 'conf/KAPT 공동주택 현황-수정.xlsx',
+#          'doc_apt_list': 'doc/공동주택 현황.xlsx'
+#          }
+
+conf_bjd_code = './conf/용인시 법정동 코드.txt'
+
+conf_yiapt_list_file = 'conf/용인시 공동주택 현황.xlsx'
+conf_yiapt_list_sheet = 'summary'
+
+conf_yi_elecplace_file = 'conf/용인시 투표구 관할구역.xlsx'
+conf_yi_elecplace_sheet = '2020년 제21대 국회의원선거'
+
+conf_yiaddr_file = 'conf/용인시 통리반 관할구역.xlsx'
+conf_yiaddr_sheet = 'step1'
+conf_yiaddr_file_fix = 'conf/용인시 통리반 관할구역-수정.xlsx'
+
+doc_kapt_list = 'doc/KAPT 공동주택 현황.xlsx'
+conf_kapt_list_fix = 'conf/KAPT 공동주택 현황-수정.xlsx'
+
+doc_apt_list = 'doc/공동주택 현황.xlsx'
+doc_elec_place_list = 'doc/투표구 관할구역.xlsx'
+doc_elec_zone_list = 'doc/투표소별 단지 현황.xlsx'
+doc_apt_price = 'doc/아파트 매매 실거래가.xlsx'
+
 if False:
     # Get Apt List
     aptList = al.AptList(service_key)
 
-    bjd_file = './conf/용인시 법정동 코드.txt'
     # target_gus = []
     target_gus = ['기흥구', '수지구', '처인구']
     target_dongs = ['동백동']
     # target_dongs = ['동백동', '중동', '마북동', '보정동']
-    aptList.get(bjd_file, target_gus, target_dongs)
+    aptList.get(conf_bjd_code, target_gus, target_dongs)
     print(aptList.items)
 
     apt_codes = aptList.items['단지코드']
@@ -53,32 +80,33 @@ if False:
     # apt_infos = pd.concat(aptList.items, aptInfo.items, axis=1)
     apt_infos = pd.merge(aptList.items, aptInfo.items, on='단지코드')
     # apt_infos['단지명 일치'] = apt_infos['단지명'] == apt_infos['단지명2']
-    apt_infos.to_excel('doc/KAPT 공동주택 현황.xlsx', sheet_name='code')
+    apt_infos.to_excel(doc_kapt_list)
     print(apt_infos)
 
 if False:
-    apt_info_merge = am.AptInfoMerge()
+    apt_info_merge = am.AptInfoMerge(conf_yiapt_list_file, conf_yiapt_list_sheet, doc_kapt_list, conf_kapt_list_fix)
     apt_info_merge.run()
+    apt_info_merge.to_excel(doc_apt_list)
 
 if False:
     # elec_list = el.ElecCode(service_key)
     # elec_list.get()
     # print(elec_list.items)
     # elec_list.items.to_excel('elecCode_sg.xlsx', sheet_name='sg')
-    elec_place = ep.ElecPlace()
+    elec_place = ep.ElecPlace(conf_yi_elecplace_file, conf_yi_elecplace_sheet)
     elec_place.decode()
-    print(elec_place.items)
-    elec_place.items.to_excel('doc/투표구 관할구역.xlsx', sheet_name='place')
+    elec_place.to_excel(doc_elec_place_list)
 
 if False:
-    elec_zone = ez.elecZone()
+    elec_zone = ez.elecZone(conf_yiaddr_file, conf_yiaddr_sheet, conf_yiaddr_file_fix, doc_apt_list, doc_elec_place_list)
     elec_zone.match_zone()
+    elec_zone.to_excel(doc_elec_zone_list)
 
-if True:
+if False:
     apt_price = ap.AptPrice(service_key)
     target_gus = ['기흥구', '수지구']
     apt_price.get(target_gus, 2020, 9, 2020, 9)
-    apt_price.to_excel('doc/아파트 매매 실거래가.xlsx', sheet_name='deal')
+    apt_price.to_excel(doc_apt_price)
 
 if False:
     elec_result = er.ElecResult()

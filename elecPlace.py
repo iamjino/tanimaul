@@ -2,8 +2,8 @@ import pandas as pd
 
 
 class ElecPlace:
-    def __init__(self):
-        self.df = pd.read_excel('conf/용인시 투표구 관할구역.xlsx', sheet_name='2020년 제21대 국회의원선거', skiprows=2)
+    def __init__(self, conf_yi_elecplace_file, conf_yi_elecplace_sheet):
+        self.df = pd.read_excel(conf_yi_elecplace_file, sheet_name=conf_yi_elecplace_sheet, skiprows=2)
 
     def decode(self):
         key_gu = '구·시·군명'
@@ -44,3 +44,6 @@ class ElecPlace:
                         infos[key_tong].append(value_tong)
 
         self.items = pd.DataFrame(infos)
+
+    def to_excel(self, xlsx_name, sheet_name='sheet1'):
+        self.items.to_excel(xlsx_name, sheet_name=sheet_name)

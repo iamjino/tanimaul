@@ -95,5 +95,5 @@ class AptPrice:
 
         self.items = pd.DataFrame(self.infos)
 
-    def to_excel(self, xlsx_name, sheet_name):
+    def to_excel(self, xlsx_name, sheet_name='sheet1'):
         self.items.to_excel(xlsx_name, sheet_name=sheet_name)
