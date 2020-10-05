@@ -6,7 +6,7 @@ class elecZone:
         self._apt_info = pd.read_excel('doc/공동주택 현황.xlsx', sheet_name='apt')
         pass
 
-    def load_detail(self):
+    def match_zone(self):
         yi_zone = pd.read_excel('conf/용인시 통리반 관할구역.xlsx', sheet_name='step1', index_col=None)
         temp1 = yi_zone[['개정일', '행정동', '통명', '건물', '법정동', '통', '반', '읍면동', '통리명', '반의명칭', '관할구역']]
         temp1 = temp1[temp1['반의명칭'].notnull()]
@@ -67,3 +67,10 @@ class elecZone:
                 tong_addr.at[i, '단지명'] = df_apt.at[0, '단지명']
 
         tong_addr.to_excel('doc/통리반 관할구역.xlsx', sheet_name='zone')
+
+        addr_concise = tong_addr[['행정동', '법정동', '투표소명', '단지명', '주소']]
+        addr_concise = addr_concise[addr_concise['단지명'] != '']
+        df_concise = addr_concise.drop_duplicates(subset=['단지명'], ignore_index=True)
+        print(df_concise)
+
+        df_concise.to_excel('doc/투표소별 단지 현황.xlsx')

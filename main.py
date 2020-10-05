@@ -56,16 +56,16 @@ if False:
     apt_infos.to_excel('doc/KAPT 공동주택 현황.xlsx', sheet_name='code')
     print(apt_infos)
 
-if True:
+if False:
     apt_info_merge = am.AptInfoMerge()
     apt_info_merge.run()
 
-if True:
+if False:
     apt_price = ap.AptPrice(service_key)
     target_gus = ['기흥구', '수지구']
     apt_price.get(target_gus, 2019, 10, 2020, 1)
 
-if True:
+if False:
     # elec_list = el.ElecCode(service_key)
     # elec_list.get()
     # print(elec_list.items)
@@ -77,9 +77,10 @@ if True:
 
 if True:
     elec_zone = ez.elecZone()
-    elec_zone.load_detail()
+    elec_zone.match_zone()
 
-if True:
+
+if False:
     elec_result = er.ElecResult()
     elec_result.run()
 
