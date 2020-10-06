@@ -6,6 +6,7 @@ import aptList as al
 import aptInfo as ai
 import aptPrice as ap
 import elecPlace as ep
+import aptPriceAnalysis as apa
 import elecZone as ez
 import elecResult as er
 import aptInfoMerge as am
@@ -16,14 +17,27 @@ import openpyxl
 import requests
 
 
-def print_hi(name):
+def print_hi(name1):
     # Use a breakpoint in the code line below to debug your script.
-    print('Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
-
+    print('Hi,', name1)  # Press ⌘F8 to toggle the breakpoint.
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     print_hi('Tanimaul')
+
+if False:
+    from bs4 import BeautifulSoup
+    import urllib.request as req
+
+    url = 'https://ko.wikisource.org/wiki/%EC%A0%80%EC%9E%90:%ED%95%9C%EC%9A%A9%EC%9A%B4'
+    # url = '#mw-content-text > div.mw-parser-output > ul:nth-child(7) > li:nth-child(1) > a'
+    res = req.urlopen(url)
+
+    soup = BeautifulSoup(res, 'html.parser')
+    list = soup.select("#mw-content-text > div.mw-parser-output > ul > li > a")
+    for a in list:
+        name = a.string
+        print(name)
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 service_key = 'wRaEeY%2BpbPZX3OjIYLLt74uO5%2BAY7DXQJ9MWyyGodai94K7JvfjtLL%2FTRzkFuMxfb6SmuGqcM2YSCcVa4V1KeQ%3D%3D'
@@ -56,6 +70,12 @@ doc_apt_list = 'doc/공동주택 현황.xlsx'
 doc_elec_place_list = 'doc/투표구 관할구역.xlsx'
 doc_elec_zone_list = 'doc/투표소별 단지 현황.xlsx'
 doc_apt_price = 'doc/아파트 매매 실거래가.xlsx'
+
+price_chart = 'chart.png'
+start_year = 2020
+start_month = 1
+end_year = 2020
+end_month = 12
 
 if False:
     # Get Apt List
@@ -104,26 +124,14 @@ if False:
 
 if False:
     apt_price = ap.AptPrice(service_key)
-    target_gus = ['기흥구', '수지구']
-    apt_price.get(target_gus, 2020, 9, 2020, 9)
+    target_gus = ['기흥구']
+    apt_price.get(target_gus, start_year, start_month, end_year, end_month)
     apt_price.to_excel(doc_apt_price)
 
 if False:
     elec_result = er.ElecResult()
     elec_result.run()
 
-if False:
-    from bs4 import BeautifulSoup
-    import urllib.request as req
-
-    url = 'https://ko.wikisource.org/wiki/%EC%A0%80%EC%9E%90:%ED%95%9C%EC%9A%A9%EC%9A%B4'
-    # url = '#mw-content-text > div.mw-parser-output > ul:nth-child(7) > li:nth-child(1) > a'
-    res = req.urlopen(url)
-
-    soup = BeautifulSoup(res, 'html.parser')
-    list = soup.select("#mw-content-text > div.mw-parser-output > ul > li > a")
-    for a in list:
-        name = a.string
-        print(name)
-
-
+if True:
+    apt_price_analysis = apa.AptPriceAnalysis(doc_apt_price, price_chart, start_year, start_month, end_year, end_month)
+    apt_price_analysis.analysis('중동 1101')
