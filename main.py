@@ -72,7 +72,7 @@ doc_elec_zone_list = 'doc/투표소별 단지 현황.xlsx'
 doc_apt_price = 'doc/아파트 매매 실거래가.xlsx'
 
 price_chart = 'chart.png'
-start_year = 2020
+start_year = 2007
 start_month = 1
 end_year = 2020
 end_month = 12
@@ -128,10 +128,10 @@ if False:
     apt_price.get(target_gus, start_year, start_month, end_year, end_month)
     apt_price.to_excel(doc_apt_price)
 
+if True:
+    apt_price_analysis = apa.AptPriceAnalysis(doc_apt_price, price_chart, start_year, start_month, end_year, end_month)
+    apt_price_analysis.analysis('중동 870')
+
 if False:
     elec_result = er.ElecResult()
     elec_result.run()
-
-if True:
-    apt_price_analysis = apa.AptPriceAnalysis(doc_apt_price, price_chart, start_year, start_month, end_year, end_month)
-    apt_price_analysis.analysis('중동 1101')
