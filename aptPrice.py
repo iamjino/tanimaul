@@ -5,9 +5,10 @@ import pandas as pd
 import re
 
 class AptPrice:
-    def __init__(self,  key):
-        self._callback_url = 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade'
+    def __init__(self, url, key):
+        # self._callback_url = 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade'
         # self._callback_url = 'http://openapi.molit.go.kr/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTradeDev'
+        self._callback_url = url
         self._service_key = key
         self._bjd_code_df = {'기흥구': '41463', '수지구': '41465', '처인구': '41461'}
         self.items = ''
@@ -25,7 +26,8 @@ class AptPrice:
             '지번': [],
             '건축년도': [],
             '전용면적': [],
-            '층': []
+            '층': [],
+            '유형': []
         }
 
     def _create_url(self):
@@ -46,31 +48,45 @@ class AptPrice:
             value = value.strip()
         self.infos[key].append(value)
 
-    def _parse_xml(self, land_name):
+    def _parse_xml(self, key, land_name):
         # self._pretty_soup = self._soup.prettify(formatter='html')
         # print(self._pretty_soup)
         items = self._soup.find_all('item')
         for item in items:
             split_item = re.split('<.*?>', item.text)
             self._append_info('구', land_name)
-            self._append_info('거래금액', split_item[1].replace(',', ''))
-            self._append_info('건축년도', split_item[2])
-            self._append_info('년', split_item[3])
-            self._append_info('법정동', split_item[4])
-            self._append_info('단지명', split_item[5])
-            self._append_info('월', split_item[6])
-            self._append_info('일', split_item[7])
-            self._append_info('전용면적', split_item[8])
-            self._append_info('지번', split_item[9])
-            self._append_info('층', split_item[11])
+            if key == 'apt':
+                self._append_info('유형', '아파트')
+                self._append_info('거래금액', split_item[1].replace(',', ''))
+                self._append_info('건축년도', split_item[2])
+                self._append_info('년', split_item[3])
+                self._append_info('법정동', split_item[4])
+                self._append_info('단지명', split_item[5])
+                self._append_info('월', split_item[6])
+                self._append_info('일', split_item[7])
+                self._append_info('전용면적', split_item[8])
+                self._append_info('지번', split_item[9])
+                self._append_info('층', split_item[11])
+            elif key == 'rh':
+                self._append_info('유형', '연립다세대')
+                self._append_info('거래금액', split_item[1].replace(',', ''))
+                self._append_info('건축년도', split_item[2])
+                self._append_info('년', split_item[3])
+                self._append_info('법정동', split_item[5])
+                self._append_info('단지명', split_item[6])
+                self._append_info('월', split_item[7])
+                self._append_info('일', split_item[8])
+                self._append_info('전용면적', split_item[9])
+                self._append_info('지번', split_item[10])
+                self._append_info('층', split_item[12])
 
-    def _query(self, land_name, deal_ymd):
+    def _query(self, key, land_name, deal_ymd):
         land_code = self._bjd_code_df[land_name]
         self._land_code = land_code
         self._deal_ymd = deal_ymd
         self._create_url()
         self._request()
-        self._parse_xml(land_name)
+        self._parse_xml(key, land_name)
 
     def _get_ymd(self, start_year, start_month, end_year, end_month):
         deal_ymds = []
@@ -86,12 +102,12 @@ class AptPrice:
                 deal_ymds.append(ymd)
         return deal_ymds
 
-    def get(self, gu_names, start_year, start_month, end_year, end_month):
+    def get(self, key, gu_names, start_year, start_month, end_year, end_month):
         deal_ymds = self._get_ymd(start_year, start_month, end_year, end_month)
         for gu_name in gu_names:
             for deal_ymd in deal_ymds:
                 print(gu_name, deal_ymd)
-                self._query(gu_name, deal_ymd)
+                self._query(key, gu_name, deal_ymd)
 
         self.items = pd.DataFrame(self.infos)
 

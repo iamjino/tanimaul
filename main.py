@@ -72,10 +72,10 @@ doc_elec_zone_list = 'doc/투표소별 단지 현황.xlsx'
 doc_apt_price = 'doc/아파트 매매 실거래가.xlsx'
 
 price_chart = 'chart.png'
-start_year = 2007
-start_month = 1
+start_year = 2019
+start_month = 10
 end_year = 2020
-end_month = 12
+end_month = 1
 
 if False:
     # Get Apt List
@@ -122,13 +122,32 @@ if False:
     elec_zone.match_zone()
     elec_zone.to_excel(doc_elec_zone_list)
 
-if False:
-    apt_price = ap.AptPrice(service_key)
-    target_gus = ['기흥구']
-    apt_price.get(target_gus, start_year, start_month, end_year, end_month)
-    apt_price.to_excel(doc_apt_price)
-
 if True:
+    rt_urls = {'apt': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade',
+              'rh': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcRHTrade'}
+    # rt_urls = {'rh': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcRHTrade'}
+    print(rt_urls.values())
+    house_types = ['apt', 'rh']
+    target_gus = ['기흥구']
+    # deals = {}
+    deal_items = []
+    for key in house_types:
+        print(key, rt_urls[key])
+        deal = ap.AptPrice(rt_urls[key], service_key)
+        deal.get(key, target_gus, start_year, start_month, end_year, end_month)
+        deal_items.append(deal.items)
+        # deals[key] = deal
+
+    # house_prices = pd.concat([deals['apt'].items, deals['rh'].items], ignore_index=True)
+    house_prices = pd.concat(deal_items, ignore_index=True)
+    house_prices.to_excel('result.xlsx')
+    # for key in deals.keys():
+
+    # apt_prigus = ['기흥구']
+    # apt_price.get(target_gus, start_year, start_month, end_year, end_month)
+    # apt_price.to_excel(doc_apt_price)
+
+if False:
     apt_price_analysis = apa.AptPriceAnalysis(doc_apt_price, price_chart, start_year, start_month, end_year, end_month)
     apt_price_analysis.analysis('중동 870')
 
