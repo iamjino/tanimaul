@@ -1,9 +1,9 @@
 import pandas as pd
 
 class AptInfoMerge:
-    def __init__(self, conf_yiapt_list_file, conf_yiapt_list_sheet, doc_kapt_list, conf_kapt_list_fix):
+    def __init__(self, conf_yiapt_list_file, conf_yiapt_list_sheet, doc_kapt_info, conf_kapt_info_fix):
         self.load_yicity(conf_yiapt_list_file, conf_yiapt_list_sheet)
-        self.load_kapt(doc_kapt_list, conf_kapt_list_fix)
+        self.load_kapt(doc_kapt_info, conf_kapt_info_fix)
 
     def load_yicity(self, conf_yiapt_list_file, conf_yiapt_list_sheet):
         self.yicity = pd.read_excel(conf_yiapt_list_file, sheet_name=conf_yiapt_list_sheet)
@@ -21,9 +21,9 @@ class AptInfoMerge:
         self.yicity['doraddr'] = self.yicity['간략 도로명주소'].str.replace(' ', '')
         print('yicity:', self.yicity.index.size)
 
-    def load_kapt(self, doc_kapt_list, conf_kapt_list_fix):
-        self.kapt = pd.read_excel(doc_kapt_list)
-        bugfix = pd.read_excel(conf_kapt_list_fix)
+    def load_kapt(self, doc_kapt_info, conf_kapt_info_fix):
+        self.kapt = pd.read_excel(doc_kapt_info)
+        bugfix = pd.read_excel(conf_kapt_info_fix)
         for b in range(bugfix.index.size):
             code = bugfix.at[b, '단지코드']
             indexes = self.kapt.index[self.kapt['단지코드'] == code]

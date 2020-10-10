@@ -2,8 +2,8 @@
 
 # Press ⌃R to execute it or replace it with your code.
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
-import aptList as al
-import aptInfo as ai
+import kaptList as al
+import kaptInfo as ai
 import houseDeal as hd
 import elecPlace as ep
 import aptPriceAnalysis as apa
@@ -46,8 +46,8 @@ service_key = requests.utils.unquote(service_key)
 # files = {'conf_bjd_code': './conf/용인시 법정동 코드.txt',
 #          'conf_yiapt_list_file': 'conf/용인시 공동주택 현황.xlsx',
 #          'conf_yiapt_list_sheet': 'summary',
-#          'doc_kapt_list': 'doc/KAPT 공동주택 현황.xlsx',
-#          'conf_kapt_list_fix': 'conf/KAPT 공동주택 현황-수정.xlsx',
+#          'doc_kapt_info': 'doc/KAPT 공동주택 현황.xlsx',
+#          'conf_kapt_info_fix': 'conf/KAPT 공동주택 현황-수정.xlsx',
 #          'doc_apt_list': 'doc/공동주택 현황.xlsx'
 #          }
 
@@ -63,8 +63,8 @@ conf_yiaddr_file = 'conf/용인시 통리반 관�
 conf_yiaddr_sheet = 'step1'
 conf_yiaddr_file_fix = 'conf/용인시 통리반 관할구역-수정.xlsx'
 
-doc_kapt_list = 'doc/KAPT 공동주택 현황.xlsx'
-conf_kapt_list_fix = 'conf/KAPT 공동주택 현황-수정.xlsx'
+doc_kapt_info = 'doc/KAPT 공동주택 현황.xlsx'
+conf_kapt_info_fix = 'conf/KAPT 공동주택 현황-수정.xlsx'
 
 doc_apt_list = 'doc/공동주택 현황.xlsx'
 doc_elec_place_list = 'doc/투표구 관할구역.xlsx'
@@ -78,15 +78,23 @@ start_month = 12
 end_year = 2020
 end_month = 1
 
-if False:
-    # Get Apt List
-    aptList = al.AptList(service_key)
+if True:
+    def get_bjd_code(conf_bjd_code):
+        bjd_code_df = pd.read_csv(conf_bjd_code, sep='\t', encoding='EUC-KR')
+        bjd_code_df.columns = ['bjd_code', 'dong_name', 'valid']
+        bjd_code_df.columns.name = 'Code Info'
+        return bjd_code_df.loc[bjd_code_df['valid'] == '존재', :]
 
-    # target_gus = []
-    target_gus = ['기흥구', '수지구', '처인구']
+    bjd_codes = get_bjd_code(conf_bjd_code)
+
+    # Get Apt List
+    aptList = al.KaptList(service_key)
+
+    target_gus = []
+    # target_gus = ['기흥구', '수지구', '처인구']
     target_dongs = ['동백동']
     # target_dongs = ['동백동', '중동', '마북동', '보정동']
-    aptList.get(conf_bjd_code, target_gus, target_dongs)
+    aptList.get(bjd_codes, target_gus, target_dongs)
     print(aptList.items)
 
     apt_codes = aptList.items['단지코드']
@@ -94,18 +102,18 @@ if False:
     print(apt_codes)
 
     # Get Apt Info
-    aptInfo = ai.AptInfo(service_key)
+    aptInfo = ai.KaptInfo(service_key)
     print(aptInfo.items)
     aptInfo.get(apt_codes)
 
     # apt_infos = pd.concat(aptList.items, aptInfo.items, axis=1)
     apt_infos = pd.merge(aptList.items, aptInfo.items, on='단지코드')
     # apt_infos['단지명 일치'] = apt_infos['단지명'] == apt_infos['단지명2']
-    apt_infos.to_excel(doc_kapt_list)
+    apt_infos.to_excel(doc_kapt_info)
     print(apt_infos)
 
 if False:
-    apt_info_merge = am.AptInfoMerge(conf_yiapt_list_file, conf_yiapt_list_sheet, doc_kapt_list, conf_kapt_list_fix)
+    apt_info_merge = am.AptInfoMerge(conf_yiapt_list_file, conf_yiapt_list_sheet, doc_kapt_info, conf_kapt_info_fix)
     apt_info_merge.run()
     apt_info_merge.to_excel(doc_apt_list)
 
@@ -130,19 +138,25 @@ if True:
                'rh_rent': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcRHRent'}
     target_gus = ['기흥구']
 
-    def get_deal_list(export_filename, query_keys):
+    def get_deal_list(deal_type, export_filename, house_types):
         deal_items = []
-        for key in query_keys:
+        for house_type in house_types:
+            key = house_type + '_' + deal_type
             print(key, rt_urls[key])
-            deal = hd.HouseDeal(rt_urls[key], service_key)
+            deal = ''
+            if deal_type == 'trade':
+                deal = hd.HouseDealTrade(rt_urls[key], service_key)
+            elif deal_type == 'rent':
+                deal = hd.HouseDealRent(rt_urls[key], service_key)
             deal.get(target_gus, start_year, start_month, end_year, end_month)
             deal_items.append(deal.items)
 
         house_prices = pd.concat(deal_items, ignore_index=True)
         house_prices.to_excel(export_filename)
 
-    get_deal_list(doc_rent_price, ['apt_rent', 'rh_rent'])
-    get_deal_list(doc_trade_price, ['apt_trade', 'rh_trade'])
+    # get_deal_list(doc_rent_price, ['apt_rent', 'rh_rent'])
+    get_deal_list('rent', doc_rent_price, ['apt', 'rh'])
+    get_deal_list('trade', doc_trade_price, ['apt', 'rh'])
 
 if False:
     apt_price_analysis = apa.AptPriceAnalysis(doc_rent_price, price_chart, start_year, start_month, end_year, end_month)
