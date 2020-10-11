@@ -9,11 +9,10 @@ import elecPlace as ep
 import aptPriceAnalysis as apa
 import elecZone as ez
 import elecResult as er
-import aptInfoMerge as am
+import houseInfo as hi
 import elecCode as el
 import pandas as pd
 import openpyxl
-
 import requests
 
 
@@ -66,7 +65,7 @@ conf_yiaddr_file_fix = 'conf/용인시 통리반 과�
 doc_kapt_info = 'doc/KAPT 공동주택 현황.xlsx'
 conf_kapt_info_fix = 'conf/KAPT 공동주택 현황-수정.xlsx'
 
-doc_apt_list = 'doc/공동주택 현황.xlsx'
+doc_house_info = 'doc/공동주택 현황.xlsx'
 doc_elec_place_list = 'doc/투표구 관할구역.xlsx'
 doc_elec_zone_list = 'doc/투표소별 단지 현황.xlsx'
 doc_trade_price = 'doc/주택 매매 현황.xlsx'
@@ -78,44 +77,37 @@ start_month = 12
 end_year = 2020
 end_month = 1
 
-if True:
+if False:
     def get_bjd_code(conf_bjd_code):
         bjd_code_df = pd.read_csv(conf_bjd_code, sep='\t', encoding='EUC-KR')
         bjd_code_df.columns = ['bjd_code', 'dong_name', 'valid']
         bjd_code_df.columns.name = 'Code Info'
         return bjd_code_df.loc[bjd_code_df['valid'] == '존재', :]
 
-    bjd_codes = get_bjd_code(conf_bjd_code)
-
     # Get Apt List
-    aptList = al.KaptList(service_key)
-
-    target_gus = []
-    # target_gus = ['기흥구', '수지구', '처인구']
+    bjd_codes = get_bjd_code(conf_bjd_code)
+    target_gus = ['기흥구', '수지구', '처인구']
+    # target_gus = []
     target_dongs = ['동백동']
-    # target_dongs = ['동백동', '중동', '마북동', '보정동']
-    aptList.get(bjd_codes, target_gus, target_dongs)
-    print(aptList.items)
 
-    apt_codes = aptList.items['단지코드']
-    # apt_codes = ['A44691615', 'A44679103']
-    print(apt_codes)
+    kapt_list = al.KaptList(service_key)
+    kapt_list.get(bjd_codes, target_gus, target_dongs)
 
     # Get Apt Info
-    aptInfo = ai.KaptInfo(service_key)
-    print(aptInfo.items)
-    aptInfo.get(apt_codes)
+    apt_codes = kapt_list.items['단지코드']
 
-    # apt_infos = pd.concat(aptList.items, aptInfo.items, axis=1)
-    apt_infos = pd.merge(aptList.items, aptInfo.items, on='단지코드')
-    # apt_infos['단지명 일치'] = apt_infos['단지명'] == apt_infos['단지명2']
-    apt_infos.to_excel(doc_kapt_info)
-    print(apt_infos)
+    kapt_info = ai.KaptInfo(service_key)
+    kapt_info.get(apt_codes)
 
-if False:
-    apt_info_merge = am.AptInfoMerge(conf_yiapt_list_file, conf_yiapt_list_sheet, doc_kapt_info, conf_kapt_info_fix)
-    apt_info_merge.run()
-    apt_info_merge.to_excel(doc_apt_list)
+    kapt_info_final = pd.merge(kapt_list.items, kapt_info.items, on='단지코드')
+    kapt_info_final.to_excel(doc_kapt_info)
+    print(kapt_info_final)
+
+if True:
+    house_info = hi.HouseInfo(conf_yiapt_list_file, conf_yiapt_list_sheet, doc_kapt_info, conf_kapt_info_fix)
+    house_info.run()
+    house_info.print()
+    house_info.to_excel(doc_house_info)
 
 if False:
     # elec_list = el.ElecCode(service_key)
@@ -127,11 +119,11 @@ if False:
     elec_place.to_excel(doc_elec_place_list)
 
 if False:
-    elec_zone = ez.elecZone(conf_yiaddr_file, conf_yiaddr_sheet, conf_yiaddr_file_fix, doc_apt_list, doc_elec_place_list)
+    elec_zone = ez.elecZone(conf_yiaddr_file, conf_yiaddr_sheet, conf_yiaddr_file_fix, doc_house_info, doc_elec_place_list)
     elec_zone.match_zone()
     elec_zone.to_excel(doc_elec_zone_list)
 
-if True:
+if False:
     rt_urls = {'apt_trade': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade',
                'apt_rent': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptRent',
                'rh_trade': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcRHTrade',
@@ -154,7 +146,6 @@ if True:
         house_prices = pd.concat(deal_items, ignore_index=True)
         house_prices.to_excel(export_filename)
 
-    # get_deal_list(doc_rent_price, ['apt_rent', 'rh_rent'])
     get_deal_list('rent', doc_rent_price, ['apt', 'rh'])
     get_deal_list('trade', doc_trade_price, ['apt', 'rh'])
 
