@@ -6,7 +6,7 @@ from matplotlib import font_manager
 import numpy as np
 
 
-class AptPriceAnalysis:
+class HousePriceAnalysis:
     def __init__(self, doc_apt_price, price_chart, start_year, start_month, end_year, end_month):
         self.deal_price_all = pd.read_excel(doc_apt_price)
 
@@ -63,7 +63,7 @@ class AptPriceAnalysis:
             area_size = round(area_size, 3)
             print(area_size)
             plot_data = deal_prices[is_size][['date', '거래금액']]
-            ax.scatter(plot_data['date'], plot_data['거래금액']/10000, label=area_size, s=20, alpha=0.8, edgecolors='none', zorder=3)
+            ax.scatter(plot_data['date'], plot_data['거래금액']/10000, label=area_size, s=14, alpha=0.9, edgecolors='none', zorder=3)
 
         ax.legend(fontsize='xx-small', title='전용면적(㎡)', title_fontsize='x-small')
         plt.show()

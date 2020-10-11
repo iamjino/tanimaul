@@ -136,4 +136,8 @@ class HouseDealRent(HouseDeal):
             self._append_data('일', split_item[8])
             self._append_data('전용면적', split_item[9])
             self._append_data('지번', split_item[10])
-            self._append_data('층', split_item[12])
+            if len(split_item) > 12:
+                self._append_data('층', split_item[12])
+            else:
+                self._append_data('층', '-')
+

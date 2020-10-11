@@ -6,10 +6,11 @@ import kaptList as al
 import kaptInfo as ai
 import houseDeal as hd
 import elecPlace as ep
-import aptPriceAnalysis as apa
+import housePriceAnalysis as hpa
 import elecZone as ez
 import elecResult as er
 import houseInfo as hi
+import rentChangeRate as cr
 import elecCode as el
 import pandas as pd
 import openpyxl
@@ -69,13 +70,13 @@ doc_house_info = 'doc/공동주택 현황.xlsx'
 doc_elec_place_list = 'doc/투표구 관할구역.xlsx'
 doc_elec_zone_list = 'doc/투표소별 단지 현황.xlsx'
 doc_trade_price = 'doc/주택 매매 현황.xlsx'
-doc_rent_price = 'doc/주택 전월세 현황.xlsx'
+doc_rent_price = 'doc/주택 임대차 현황.xlsx'
 
 price_chart = 'chart.png'
-start_year = 2019
-start_month = 12
+start_year = 2016
+start_month = 1
 end_year = 2020
-end_month = 1
+end_month = 12
 
 if False:
     def get_bjd_code(conf_bjd_code):
@@ -103,7 +104,7 @@ if False:
     kapt_info_final.to_excel(doc_kapt_info)
     print(kapt_info_final)
 
-if True:
+if False:
     house_info = hi.HouseInfo(conf_yiapt_list_file, conf_yiapt_list_sheet, doc_kapt_info, conf_kapt_info_fix)
     house_info.run()
     house_info.print()
@@ -123,14 +124,14 @@ if False:
     elec_zone.match_zone()
     elec_zone.to_excel(doc_elec_zone_list)
 
-if False:
+if True:
     rt_urls = {'apt_trade': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade',
                'apt_rent': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptRent',
                'rh_trade': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcRHTrade',
                'rh_rent': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcRHRent'}
     target_gus = ['기흥구']
 
-    def get_deal_list(deal_type, export_filename, house_types):
+    def get_deal_list(deal_type, house_types):
         deal_items = []
         for house_type in house_types:
             key = house_type + '_' + deal_type
@@ -144,15 +145,42 @@ if False:
             deal_items.append(deal.items)
 
         house_prices = pd.concat(deal_items, ignore_index=True)
-        house_prices.to_excel(export_filename)
+        return house_prices
 
-    get_deal_list('rent', doc_rent_price, ['apt', 'rh'])
-    get_deal_list('trade', doc_trade_price, ['apt', 'rh'])
+    def postprocess_rent_prices(my_rent_prices):
+        conf_rent_change_rate = 'conf/전월세 전환율.xlsx'
+        rent_change_rates = cr.RentChageRate(conf_rent_change_rate)
+        my_rent_prices['전월세 전환율'] = ''
+        my_rent_prices['거래금액'] = ''
 
-if False:
-    apt_price_analysis = apa.AptPriceAnalysis(doc_rent_price, price_chart, start_year, start_month, end_year, end_month)
-    apt_price_analysis.analysis('중동 870')
+        for index in range(my_rent_prices.index.size):
+            rent = int(my_rent_prices.at[index, '월세금액'])
+            deposit = int(my_rent_prices.at[index, '보증금액'])
+            gu_name = my_rent_prices.at[index, '구']
+            year = int(my_rent_prices.at[index, '년'])
+            month = int(my_rent_prices.at[index, '월'])
+
+            rate = rent_change_rates.get(gu_name, year, month)
+
+            price = (rent*12) / rate * 100 + deposit
+            price = round(price, -2)
+            my_rent_prices.at[index, '전월세 전환율'] = rate
+            my_rent_prices.at[index, '거래금액'] = price
+
+        return my_rent_prices
+
+    trade_prices = get_deal_list('trade', ['apt', 'rh'])
+    trade_prices.to_excel(doc_trade_price)
+
+    rent_prices = get_deal_list('rent', ['apt', 'rh'])
+    rent_prices = postprocess_rent_prices(rent_prices)
+    rent_prices.to_excel(doc_rent_price)
+
+if True:
+    house_price_analysis = hpa.HousePriceAnalysis(doc_rent_price, price_chart, start_year, start_month, end_year, end_month)
+    house_price_analysis.analysis('중동 870')
 
 if False:
     elec_result = er.ElecResult()
     elec_result.run()
+
