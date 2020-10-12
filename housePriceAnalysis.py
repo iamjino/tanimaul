@@ -53,7 +53,7 @@ class HousePriceAnalysis:
         plt.interactive(True)
         plt.xlim(self.dStart, self.dEnd)
         plt.xlabel('계약년월')
-        plt.ylabel('실거래가 (억 원)')
+        plt.ylabel('거래금액 (억 원)')
         plt.xticks(fontsize=7, rotation=45)
         plt.yticks(fontsize=7)
         ax.grid(True, zorder=0, color='#cccccc', linewidth=0.2)

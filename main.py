@@ -5,9 +5,9 @@
 import kaptList as al
 import kaptInfo as ai
 import houseDeal as hd
-import elecPlace as ep
+import pollingDistrictAddress as pda
 import housePriceAnalysis as hpa
-import elecZone as ez
+import pollingDistrictHouse as pdh
 import elecResult as er
 import houseInfo as hi
 import rentChangeRate as cr
@@ -67,13 +67,13 @@ doc_kapt_info = 'doc/KAPT 공동주택 현황.xlsx'
 conf_kapt_info_fix = 'conf/KAPT 공동주택 현황-수정.xlsx'
 
 doc_house_info = 'doc/공동주택 현황.xlsx'
-doc_elec_place_list = 'doc/투표구 관할구역.xlsx'
-doc_elec_zone_list = 'doc/투표소별 단지 현황.xlsx'
+doc_poll_addr_list = 'doc/투표구 관할구역.xlsx'
+doc_poll_house_list = 'doc/투표구 단지 현황.xlsx'
 doc_trade_price = 'doc/주택 매매 현황.xlsx'
 doc_rent_price = 'doc/주택 임대차 현황.xlsx'
 
 price_chart = 'chart.png'
-start_year = 2016
+start_year = 2006
 start_month = 1
 end_year = 2020
 end_month = 12
@@ -111,20 +111,22 @@ if False:
     house_info.to_excel(doc_house_info)
 
 if False:
-    # elec_list = el.ElecCode(service_key)
+    elec_list = el.ElecCode(service_key)
     # elec_list.get()
     # print(elec_list.items)
     # elec_list.items.to_excel('elecCode_sg.xlsx', sheet_name='sg')
-    elec_place = ep.ElecPlace(conf_yi_elecplace_file, conf_yi_elecplace_sheet)
-    elec_place.decode()
-    elec_place.to_excel(doc_elec_place_list)
-
-if False:
-    elec_zone = ez.elecZone(conf_yiaddr_file, conf_yiaddr_sheet, conf_yiaddr_file_fix, doc_house_info, doc_elec_place_list)
-    elec_zone.match_zone()
-    elec_zone.to_excel(doc_elec_zone_list)
 
 if True:
+    poll_addr = pda.PollingDistrictAddress(conf_yi_elecplace_file, conf_yi_elecplace_sheet)
+    poll_addr.run()
+    poll_addr.to_excel(doc_poll_addr_list)
+
+if True:
+    poll_house = pdh.PollingDistrictHouse(conf_yiaddr_file, conf_yiaddr_sheet, conf_yiaddr_file_fix, doc_house_info, doc_poll_addr_list)
+    poll_house.run()
+    poll_house.to_excel(doc_poll_house_list)
+
+if False:
     rt_urls = {'apt_trade': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade',
                'apt_rent': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptRent',
                'rh_trade': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcRHTrade',
@@ -176,11 +178,10 @@ if True:
     rent_prices = postprocess_rent_prices(rent_prices)
     rent_prices.to_excel(doc_rent_price)
 
-if True:
+if False:
     house_price_analysis = hpa.HousePriceAnalysis(doc_rent_price, price_chart, start_year, start_month, end_year, end_month)
     house_price_analysis.analysis('중동 870')
 
 if False:
     elec_result = er.ElecResult()
     elec_result.run()
-
