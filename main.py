@@ -15,6 +15,8 @@ import elecCode as el
 import pandas as pd
 import openpyxl
 import requests
+import necResult as nr
+import necPollbook as np
 
 
 def print_hi(name1):
@@ -116,12 +118,12 @@ if False:
     # print(elec_list.items)
     # elec_list.items.to_excel('elecCode_sg.xlsx', sheet_name='sg')
 
-if True:
+if False:
     poll_addr = pda.PollingDistrictAddress(conf_yi_elecplace_file, conf_yi_elecplace_sheet)
     poll_addr.run()
     poll_addr.to_excel(doc_poll_addr_list)
 
-if True:
+if False:
     poll_house = pdh.PollingDistrictHouse(conf_yiaddr_file, conf_yiaddr_sheet, conf_yiaddr_file_fix, doc_house_info, doc_poll_addr_list)
     poll_house.run()
     poll_house.to_excel(doc_poll_house_list)
@@ -185,3 +187,13 @@ if False:
 if False:
     elec_result = er.ElecResult()
     elec_result.run()
+
+if True:
+    nr_file = '선거통계/[제21대_국회의원선거]_개표단위별_개표결과-용인시정.xlsx'
+    nec_result = nr.NecResult()
+    nec_result.open(nr_file)
+
+if True:
+    np_file = '선거통계/[제21대_국회의원선거]_선거인명부_확정상황-기흥구.xlsx'
+    nec_pollbook = np.NecPollbook()
+    nec_pollbook.open(np_file)
