@@ -1,6 +1,6 @@
 import pandas as pd
 
-class PollingDistrictHouse:
+class NecPollHouse:
     def __init__(self, conf_yiaddr_file, conf_yiaddr_sheet, conf_yiaddr_file_fix, doc_house_info, doc_poll_addr_list):
         self._house_info = pd.read_excel(doc_house_info)
         self._poll_addr = pd.read_excel(doc_poll_addr_list)

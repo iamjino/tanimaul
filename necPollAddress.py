@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-class PollingDistrictAddress:
+class NecPollAddress:
     def __init__(self, conf_yi_elecplace_file, conf_yi_elecplace_sheet):
         self.df = pd.read_excel(conf_yi_elecplace_file, sheet_name=conf_yi_elecplace_sheet, skiprows=2)
 

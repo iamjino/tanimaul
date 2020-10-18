@@ -5,9 +5,7 @@
 import kaptList as al
 import kaptInfo as ai
 import houseDeal as hd
-import pollingDistrictAddress as pda
 import housePriceAnalysis as hpa
-import pollingDistrictHouse as pdh
 import elecResult as er
 import houseInfo as hi
 import rentChangeRate as cr
@@ -15,6 +13,8 @@ import elecCode as el
 import pandas as pd
 import openpyxl
 import requests
+import necPollAddress as npa
+import necPollHouse as nph
 import necResult as nr
 import necPollbook as np
 
@@ -69,8 +69,8 @@ doc_kapt_info = 'doc/KAPT 공동주택 현황.xlsx'
 conf_kapt_info_fix = 'conf/KAPT 공동주택 현황-수정.xlsx'
 
 doc_house_info = 'doc/공동주택 현황.xlsx'
-doc_poll_addr_list = 'doc/투표구 관할구역.xlsx'
-doc_poll_house_list = 'doc/투표구 단지 현황.xlsx'
+doc_poll_addr_list = 'doc/투표구 관할주소.xlsx'
+doc_poll_house_list = 'doc/투표구 관할단지.xlsx'
 doc_trade_price = 'doc/주택 매매 현황.xlsx'
 doc_rent_price = 'doc/주택 임대차 현황.xlsx'
 
@@ -111,22 +111,6 @@ if False:
     house_info.run()
     house_info.print()
     house_info.to_excel(doc_house_info)
-
-if False:
-    elec_list = el.ElecCode(service_key)
-    # elec_list.get()
-    # print(elec_list.items)
-    # elec_list.items.to_excel('elecCode_sg.xlsx', sheet_name='sg')
-
-if False:
-    poll_addr = pda.PollingDistrictAddress(conf_yi_elecplace_file, conf_yi_elecplace_sheet)
-    poll_addr.run()
-    poll_addr.to_excel(doc_poll_addr_list)
-
-if False:
-    poll_house = pdh.PollingDistrictHouse(conf_yiaddr_file, conf_yiaddr_sheet, conf_yiaddr_file_fix, doc_house_info, doc_poll_addr_list)
-    poll_house.run()
-    poll_house.to_excel(doc_poll_house_list)
 
 if False:
     rt_urls = {'apt_trade': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade',
@@ -185,6 +169,22 @@ if False:
     house_price_analysis.analysis('중동 870')
 
 if False:
+    poll_addr = npa.NecPollAddress(conf_yi_elecplace_file, conf_yi_elecplace_sheet)
+    poll_addr.run()
+    poll_addr.to_excel(doc_poll_addr_list)
+
+if False:
+    poll_house = nph.NecPollHouse(conf_yiaddr_file, conf_yiaddr_sheet, conf_yiaddr_file_fix, doc_house_info, doc_poll_addr_list)
+    poll_house.run()
+    poll_house.to_excel(doc_poll_house_list)
+
+if False:
+    elec_list = el.ElecCode(service_key)
+    # elec_list.get()
+    # print(elec_list.items)
+    # elec_list.items.to_excel('elecCode_sg.xlsx', sheet_name='sg')
+
+if False:
     elec_result = er.ElecResult()
     elec_result.run()
 
@@ -197,3 +197,20 @@ if True:
     np_file = '선거통계/[제21대_국회의원선거]_선거인명부_확정상황-기흥구.xlsx'
     nec_pollbook = np.NecPollbook()
     nec_pollbook.open(np_file)
+
+    # nec_result.items.rename(columns={"선거인수": "선거일 선거인수"}, inplace=True)
+    # nec_result.items.rename(columns={'선거인수': '선거일 선거인수', '투표수': '선거일 투표수'})
+
+    nec_result_part = nec_result.items[['읍면동투표구명', '선거인수', '투표수', '기권수']]
+    nec_analysis = pd.merge(nec_pollbook.items, nec_result_part, on='읍면동투표구명', how='right')
+    nec_analysis['사전선거 투표수'] = nec_analysis['확정된 국내선거인수 (A)'] - nec_analysis['선거인수']
+
+    nec_analysis.to_excel('nec_anlysis.xlsx')
+
+    # nec_result_score = nec_result.items.drop(['선거인수', '투표수', '기권수'], axis=1)
+    # nec_result_score.insert(3, '유형', '선거일')
+    # nec_result_score.to_excel('nec_score.xlsx')
+
+
+
+    # kapt_info_final = pd.merge(nec_result.items, nec_pollbook.items, on=['읍면동명', '투표구명'])

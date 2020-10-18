@@ -13,7 +13,7 @@ class NecResult(NecInfo):
         self._get_sg_info(ws)
         self._get_labels(ws)
         self._read_df(filename)
-        print(self.sg_result.head(30))
+        print(self.items.head(30))
 
     def _get_sg_info(self, sheet):
         self._sg_info['대수'] = int(sheet[2][0].value[2:4])
@@ -43,7 +43,7 @@ class NecResult(NecInfo):
         df.columns = self.labels
 
         df[df.columns[0]] = self._get_filled_column(df, 0)
-        df.drop(df.index[df['투표구명'] == '소계'], axis=0, inplace=True)
+        # df.drop(df.index[df['투표구명'] == '소계'], axis=0, inplace=True)
         df.drop('계', axis=1, inplace=True)
         df = df[df.columns[df.columns.notna()]]
         for col_name in df.columns[2:]:
@@ -52,6 +52,8 @@ class NecResult(NecInfo):
                                     else x[col_name],
                                     axis=1)
 
+        df.insert(0, '읍면동투표구명', df['읍면동명'] + df['투표구명'])
+        # df.set_index(['읍면동명', '투표구명'], inplace=True)
         df.reset_index(inplace=True, drop=True)
-        self.sg_result = df
-
+        self.items = df
+        df.to_excel('nec_result.xlsx')
