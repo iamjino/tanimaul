@@ -33,3 +33,17 @@ class NecInfo(metaclass=ABCMeta):
             col.append(value)
             previous = value
         return col
+
+    def _get_text_filled_column(self, df, col_index, text):
+        col = []
+        previous = text
+        for index, row in df.iterrows():
+            value = row[df.columns[col_index]]
+            if str(type(value)) == "<class 'str'>":
+                value = value.strip()
+                if value == '':
+                    value = previous
+            else:
+                value = previous
+            col.append(value)
+        return col

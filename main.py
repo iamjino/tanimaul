@@ -17,6 +17,7 @@ import necPollAddress as npa
 import necPollHouse as nph
 import necResult as nr
 import necPollbook as np
+import math
 
 
 def print_hi(name1):
@@ -40,6 +41,16 @@ if False:
     for a in list:
         name = a.string
         print(name)
+
+if False:
+    elec_list = el.ElecCode(service_key)
+    # elec_list.get()
+    # print(elec_list.items)
+    # elec_list.items.to_excel('elecCode_sg.xlsx', sheet_name='sg')
+
+if False:
+    elec_result = er.ElecResult()
+    elec_result.run()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 service_key = 'wRaEeY%2BpbPZX3OjIYLLt74uO5%2BAY7DXQJ9MWyyGodai94K7JvfjtLL%2FTRzkFuMxfb6SmuGqcM2YSCcVa4V1KeQ%3D%3D'
@@ -117,7 +128,7 @@ if False:
                'apt_rent': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptRent',
                'rh_trade': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcRHTrade',
                'rh_rent': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcRHRent'}
-    target_gus = ['기흥구']
+    target_gus = ['기흥구', '수지']
 
     def get_deal_list(deal_type, house_types):
         deal_items = []
@@ -178,39 +189,115 @@ if False:
     poll_house.run()
     poll_house.to_excel(doc_poll_house_list)
 
-if False:
-    elec_list = el.ElecCode(service_key)
-    # elec_list.get()
-    # print(elec_list.items)
-    # elec_list.items.to_excel('elecCode_sg.xlsx', sheet_name='sg')
-
-if False:
-    elec_result = er.ElecResult()
-    elec_result.run()
-
 if True:
     nr_file = '선거통계/[제21대_국회의원선거]_개표단위별_개표결과-용인시정.xlsx'
     nec_result = nr.NecResult()
     nec_result.open(nr_file)
 
-if True:
     np_file = '선거통계/[제21대_국회의원선거]_선거인명부_확정상황-기흥구.xlsx'
     nec_pollbook = np.NecPollbook()
     nec_pollbook.open(np_file)
 
-    # nec_result.items.rename(columns={"선거인수": "선거일 선거인수"}, inplace=True)
-    # nec_result.items.rename(columns={'선거인수': '선거일 선거인수', '투표수': '선거일 투표수'})
-
-    nec_result_part = nec_result.items[['읍면동투표구명', '선거인수', '투표수', '기권수']]
+    nec_result_part = nec_result.items[['읍면동투표구명', '읍면동명', '투표구명', '선거인수', '투표수', '기권수']].copy()
+    nec_result_part.rename(columns={'읍면동명': '읍면동명_결과', '투표구명': '투표구명_결과'}, inplace=True)
     nec_analysis = pd.merge(nec_pollbook.items, nec_result_part, on='읍면동투표구명', how='right')
+    nec_analysis['선거일 투표수'] = ''
     nec_analysis['사전선거 투표수'] = nec_analysis['확정된 국내선거인수 (A)'] - nec_analysis['선거인수']
 
+    def day_voter(x):
+        result = ''
+        if x['사전선거 투표수'] > 0:
+            result = x['투표수']
+        return result
+    nec_analysis['선거일 투표수'] = nec_analysis.apply(day_voter, axis=1)
+
+    nec_analysis.drop(nec_analysis.index[nec_analysis['투표구명'] == '소계'], axis=0, inplace=True)
+    dongs = nec_analysis['읍면동명'].dropna().unique()
+    nec_analysis.set_index(['읍면동명_결과', '투표구명_결과'], inplace=True)
+    nec_analysis['관내사전투표수'] = ''
+    for dong in dongs:
+        dong_pre_sum = nec_analysis.loc[(dong, '관내사전투표'), '선거인수']
+        dong_pre = nec_analysis.loc[dong, '사전선거 투표수'].sum()
+        dong_pre_in_ratio = dong_pre_sum / dong_pre
+        for place in nec_analysis.loc[dong].index:
+            nec_analysis.loc[(dong, place), '관내사전투표수'] = \
+                nec_analysis.loc[(dong, place), '사전선거 투표수'] * dong_pre_in_ratio
+    nec_analysis['관외사전투표수'] = nec_analysis['사전선거 투표수'] - nec_analysis['관내사전투표수']
+
+    nec_analysis['선거일 투표율'] = nec_analysis['선거일 투표수'] / nec_analysis['확정된 국내선거인수 (A)'] * 100
+    nec_analysis['사전선거 투표율'] = nec_analysis['사전선거 투표수'] / nec_analysis['확정된 국내선거인수 (A)'] * 100
+    nec_analysis['관내사전선거 투표율'] = nec_analysis['관내사전투표수'] / nec_analysis['확정된 국내선거인수 (A)'] * 100
+    nec_analysis['사전선거중 관내비중'] = nec_analysis['관내사전투표수'] / nec_analysis['사전선거 투표수'] * 100
+    nec_analysis['투표율'] = nec_analysis['선거일 투표율'] + nec_analysis['사전선거 투표율']
+    nec_analysis['기권율'] = nec_analysis['기권수'] / nec_analysis['확정된 국내선거인수 (A)'] * 100
+    nec_analysis.drop(nec_analysis.index[pd.isna(nec_analysis['투표구명'])], axis=0, inplace=True)
+
+    nec_score = nec_result.items.copy()
+    nec_score.drop('읍면동투표구명', axis=1, inplace=True)
+    nec_score['유형'] = '선거일투표'
+    score = []
+
+    nec_score.set_index(['읍면동명', '투표구명', '유형'], inplace=True)
+    for dong in dongs:
+        dong_pre_score = nec_score.loc[(dong, '관내사전투표', '선거일투표')].copy()
+        dong_pre_sum = dong_pre_score['선거인수']
+        for place in nec_analysis.loc[dong].index:
+            place_pre_sum = nec_analysis.loc[(dong, place), '관내사전투표수']
+            place_pre_score = dong_pre_score / dong_pre_sum * place_pre_sum
+            place_pre_score.rename((dong, place, '관내사전투표'), inplace=True)
+            score.append(place_pre_score)
+
+    gu_pre_sum_analysis = nec_analysis['관외사전투표수'].sum()
+    gu_pre_out_score = nec_score.loc[('거소·선상투표', '전체', '선거일투표')]
+    gu_pre_out_score = gu_pre_out_score.add(nec_score.loc[('관외사전투표', '전체', '선거일투표')])
+    gu_pre_out_score = gu_pre_out_score.add(nec_score.loc[('국외부재자투표', '전체', '선거일투표')])
+    gu_pre_out_score = gu_pre_out_score.add(nec_score.loc[('잘못 투입·구분된 투표지', '전체', '선거일투표')])
+    gu_pre_sum = gu_pre_out_score['선거인수']
+
+    for dong in dongs:
+        for place in nec_analysis.loc[dong].index:
+            place_pre_sum = nec_analysis.loc[(dong, place), '관외사전투표수']
+            place_pre_score = gu_pre_out_score / gu_pre_sum_analysis * place_pre_sum
+            place_pre_score.rename((dong, place, '관외사전투표'), inplace=True)
+            score.append(place_pre_score)
+
+    nec_score = nec_score.append(score)
+    nec_score.drop(['거소·선상투표', '관외사전투표', '국외부재자투표', '잘못 투입·구분된 투표지'], axis=0, level=0, inplace=True)
+    nec_score.drop(['소계', '관내사전투표'], axis=0, level=1, inplace=True)
+    nec_score.sort_index(inplace=True)
+    print(nec_score.loc[('국외부재자투표(공관)', '전체', '선거일투표'), '투표수'])
+    total_valid = nec_score['투표수'].sum() - nec_score.loc[('국외부재자투표(공관)', '전체', '선거일투표'), '투표수']
+
+    stat_score = []
+    analysis_total_ratio = []
+    analysis_ratio = []
+    for dong in dongs:
+        for place in nec_analysis.loc[dong].index:
+            place_score = nec_score.loc[(dong, place)]
+            score_sum = place_score.sum()
+            score_sum.rename((dong, place, '소계'), inplace=True)
+
+            score_ratio = score_sum / score_sum['투표수'] * 100
+            score_ratio_analysis = score_ratio.copy()
+            score_total_ratio_anlaysis = score_sum / total_valid * 100 * nec_analysis.index.size
+            score_ratio.rename((dong, place, '비율'), inplace=True)
+            score_ratio_analysis.rename((dong, place), inplace=True)
+            score_total_ratio_anlaysis.rename((dong, place), inplace=True)
+
+            stat_score.append(score_sum)
+            stat_score.append(score_ratio)
+            analysis_ratio.append(score_ratio_analysis)
+            analysis_total_ratio.append(score_total_ratio_anlaysis)
+
+    nec_score = nec_score.append(stat_score)
+    nec_score.sort_index(inplace=True)
+    nec_score.to_excel('nec_score.xlsx')
+
+    df_ratio = pd.DataFrame(analysis_ratio)
+    df_ratio.drop(['선거인수', '투표수'], axis=1, inplace=True)
+    df_total_ratio = pd.DataFrame(analysis_total_ratio)
+    df_total_ratio.drop(['선거인수', '투표수'], axis=1, inplace=True)
+
+    nec_analysis = pd.concat([nec_analysis, df_ratio], axis=1)
+    nec_analysis = pd.concat([nec_analysis, df_total_ratio], axis=1)
     nec_analysis.to_excel('nec_anlysis.xlsx')
-
-    # nec_result_score = nec_result.items.drop(['선거인수', '투표수', '기권수'], axis=1)
-    # nec_result_score.insert(3, '유형', '선거일')
-    # nec_result_score.to_excel('nec_score.xlsx')
-
-
-
-    # kapt_info_final = pd.merge(nec_result.items, nec_pollbook.items, on=['읍면동명', '투표구명'])

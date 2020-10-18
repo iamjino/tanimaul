@@ -43,6 +43,8 @@ class NecResult(NecInfo):
         df.columns = self.labels
 
         df[df.columns[0]] = self._get_filled_column(df, 0)
+        df[df.columns[1]] = self._get_text_filled_column(df, 1, '전체')
+
         # df.drop(df.index[df['투표구명'] == '소계'], axis=0, inplace=True)
         df.drop('계', axis=1, inplace=True)
         df = df[df.columns[df.columns.notna()]]
@@ -52,8 +54,11 @@ class NecResult(NecInfo):
                                     else x[col_name],
                                     axis=1)
 
+        # df.rename(columns={"선거인수": "선거일 선거인수"}, inplace=True)
+        # df.rename(columns={"투표수": "선거일 투표수"}, inplace=True)
         df.insert(0, '읍면동투표구명', df['읍면동명'] + df['투표구명'])
         # df.set_index(['읍면동명', '투표구명'], inplace=True)
         df.reset_index(inplace=True, drop=True)
         self.items = df
         df.to_excel('nec_result.xlsx')
+    # nec_analysis.drop(nec_analysis.index[pd.isna(nec_analysis['투표구명'])], axis=0, inplace=True)
