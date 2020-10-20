@@ -85,7 +85,6 @@ doc_poll_house_list = 'doc/투표구 관할단지.xlsx'
 doc_trade_price = 'doc/주택 매매 현황.xlsx'
 doc_rent_price = 'doc/주택 임대차 현황.xlsx'
 
-price_chart = 'chart.png'
 start_year = 2006
 start_month = 1
 end_year = 2020
@@ -174,11 +173,6 @@ if False:
     rent_prices = get_deal_list('rent', ['apt', 'rh'])
     rent_prices = postprocess_rent_prices(rent_prices)
     rent_prices.to_excel(doc_rent_price)
-
-if False:
-    house_price_analysis = hpa.HousePriceAnalysis(doc_rent_price, price_chart, start_year, start_month, end_year, end_month)
-    house_price_analysis.analysis('중동 870')
-
 if False:
     poll_addr = npa.NecPollAddress(conf_yi_elecplace_file, conf_yi_elecplace_sheet)
     poll_addr.run()
@@ -190,6 +184,56 @@ if False:
     poll_house.to_excel(doc_poll_house_list)
 
 if True:
+    df_house_info_full = pd.read_excel(doc_house_info)
+    df_house_info_full.drop(['법정동', '단지명'], axis=1, inplace=True)
+    df_house_info_poll = pd.read_excel(doc_poll_house_list)
+    df_house_info_poll['간략 법정동주소'] = ''
+
+    for index, row in df_house_info_poll.iterrows():
+        value = row['법정동']
+        if value in ['죽전1동', '상현2동']:
+            df_house_info_poll.at[index, '간략 법정동주소'] = '수지구 ' + row['주소']
+        else:
+            df_house_info_poll.at[index, '간략 법정동주소'] = '기흥구 ' + row['주소']
+    df_house_infos = pd.merge(df_house_info_poll, df_house_info_full, on='간략 법정동주소')
+    doc_poll_house_info = 'doc/투표구 관할단지 정보.xlsx'
+    df_house_infos.to_excel(doc_poll_house_info)
+
+    house_price_analysis = hpa.HousePriceAnalysis(doc_trade_price, start_year, start_month, end_year, end_month)
+    house_price_analysis.analysis('중동 874', 'doc/img/', '기흥구 중동 874 백현마을동일하이빌 매매')
+
+if True:
+    house_price_analysis = hpa.HousePriceAnalysis(doc_trade_price, start_year, start_month, end_year, end_month)
+    file_path = 'doc/img/'
+    for index, row in df_house_infos.iterrows():
+        if not (row['분양형태'] == '국민임대' or row['분양형태'] == '임대'):
+            addr = row['주소']
+            if addr == '보정동 878-22':
+                addr = '보정동 878-18'
+            elif addr == '보정동 909-5':
+                addr = '보정동 909'
+
+            addr_full = row['간략 법정동주소'] + ' ' + row['단지명']
+            chart_title = addr_full + ' 매매'
+            print(file_path + chart_title)
+            house_price_analysis.analysis(addr, file_path, chart_title)
+
+if True:
+    house_price_analysis = hpa.HousePriceAnalysis(doc_rent_price, start_year, start_month, end_year, end_month)
+    file_path = 'doc/img/'
+    for index, row in df_house_infos.iterrows():
+        addr = row['주소']
+        if addr == '보정동 878-22':
+            addr = '보정동 878-18'
+        elif addr == '보정동 909-5':
+            addr = '보정동 909'
+
+        addr_full = row['간략 법정동주소'] + ' ' + row['단지명']
+        chart_title = addr_full + ' 임대차'
+        print(file_path + chart_title)
+        house_price_analysis.analysis(addr, file_path, chart_title)
+
+if False:
     nr_file = '선거통계/[제21대_국회의원선거]_개표단위별_개표결과-용인시정.xlsx'
     nec_result = nr.NecResult()
     nec_result.open(nr_file)

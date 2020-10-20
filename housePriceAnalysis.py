@@ -7,12 +7,9 @@ import numpy as np
 
 
 class HousePriceAnalysis:
-    def __init__(self, doc_apt_price, price_chart, start_year, start_month, end_year, end_month):
+    def __init__(self, doc_apt_price, start_year, start_month, end_year, end_month):
         self.deal_price_all = pd.read_excel(doc_apt_price)
 
-        self.chart = price_chart
-        if os.path.isfile(self.chart):
-            os.remove(self.chart)
 
         end_day = 31
         if end_month == 2:
@@ -22,6 +19,7 @@ class HousePriceAnalysis:
         self.start_year = start_year
         self.dStart = datetime.datetime(start_year, start_month, 1)
         self.dEnd = datetime.datetime(end_year, end_month, end_day)
+        self.dStart_init = self.dStart
 
     def _font_list_checker(self):
         font_manager._rebuild()
@@ -29,7 +27,12 @@ class HousePriceAnalysis:
             if 'Nanum' in font.name:
                 print(font.name, font.fname)
 
-    def analysis(self, addr):
+    def analysis(self, addr, path, title):
+
+        self.chart = path + title + '.png'
+        if os.path.isfile(self.chart):
+            os.remove(self.chart)
+
         texts = addr.strip().split(' ')
         is_dong = self.deal_price_all['법정동'] == texts[0]
         is_jibun = self.deal_price_all['지번'] == texts[1]
@@ -47,10 +50,13 @@ class HousePriceAnalysis:
             print(build_year)
             if self.start_year < build_year:
                 self.dStart = datetime.date(build_year, 1, 1)
+            else:
+                self.dStart = self.dStart_init
 
         plt.rcParams['font.family'] = 'NanumBarunGothicOTF'
         fig, ax = plt.subplots()
         plt.interactive(True)
+        plt.title(title)
         plt.xlim(self.dStart, self.dEnd)
         plt.xlabel('계약년월')
         plt.ylabel('거래금액 (억 원)')
@@ -68,3 +74,4 @@ class HousePriceAnalysis:
         ax.legend(fontsize='xx-small', title='전용면적(㎡)', title_fontsize='x-small')
         plt.show()
         plt.savefig(self.chart)
+        plt.close(fig)
