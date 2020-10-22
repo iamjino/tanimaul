@@ -84,6 +84,7 @@ doc_poll_addr_list = 'doc/투표구 관할주소.xlsx'
 doc_poll_house_list = 'doc/투표구 관할단지.xlsx'
 doc_trade_price = 'doc/주택 매매 현황.xlsx'
 doc_rent_price = 'doc/주택 임대차 현황.xlsx'
+doc_poll_house_info = 'doc/투표구 관할단지 정보.xlsx'
 
 start_year = 2006
 start_month = 1
@@ -183,7 +184,8 @@ if False:
     poll_house.run()
     poll_house.to_excel(doc_poll_house_list)
 
-if True:
+if False:
+    # 투표구 관할단지 정보 생성
     df_house_info_full = pd.read_excel(doc_house_info)
     df_house_info_full.drop(['법정동', '단지명'], axis=1, inplace=True)
     df_house_info_poll = pd.read_excel(doc_poll_house_list)
@@ -196,13 +198,10 @@ if True:
         else:
             df_house_info_poll.at[index, '간략 법정동주소'] = '기흥구 ' + row['주소']
     df_house_infos = pd.merge(df_house_info_poll, df_house_info_full, on='간략 법정동주소')
-    doc_poll_house_info = 'doc/투표구 관할단지 정보.xlsx'
     df_house_infos.to_excel(doc_poll_house_info)
 
-    house_price_analysis = hpa.HousePriceAnalysis(doc_trade_price, start_year, start_month, end_year, end_month)
-    house_price_analysis.analysis('중동 874', 'doc/img/', '기흥구 중동 874 백현마을동일하이빌 매매')
-
-if True:
+if False:
+    # 주택 매매 차트 생성: 투표구 관할단지 정보 생성 활성화 필요
     house_price_analysis = hpa.HousePriceAnalysis(doc_trade_price, start_year, start_month, end_year, end_month)
     file_path = 'doc/img/'
     for index, row in df_house_infos.iterrows():
@@ -218,7 +217,8 @@ if True:
             print(file_path + chart_title)
             house_price_analysis.analysis(addr, file_path, chart_title)
 
-if True:
+if False:
+    # 주택 임대차 차트 생성: 투표구 관할단지 정보 생성 활성화 필요
     house_price_analysis = hpa.HousePriceAnalysis(doc_rent_price, start_year, start_month, end_year, end_month)
     file_path = 'doc/img/'
     for index, row in df_house_infos.iterrows():
@@ -233,7 +233,8 @@ if True:
         print(file_path + chart_title)
         house_price_analysis.analysis(addr, file_path, chart_title)
 
-if False:
+if True:
+    # 선거인명부 개표결과 분석
     nr_file = '선거통계/[제21대_국회의원선거]_개표단위별_개표결과-용인시정.xlsx'
     nec_result = nr.NecResult()
     nec_result.open(nr_file)
@@ -341,7 +342,20 @@ if False:
     df_ratio.drop(['선거인수', '투표수'], axis=1, inplace=True)
     df_total_ratio = pd.DataFrame(analysis_total_ratio)
     df_total_ratio.drop(['선거인수', '투표수'], axis=1, inplace=True)
-
     nec_analysis = pd.concat([nec_analysis, df_ratio], axis=1)
     nec_analysis = pd.concat([nec_analysis, df_total_ratio], axis=1)
+
+    df_house_infos = pd.read_excel(doc_poll_house_info)
+    df_house_info_sub1 = df_house_infos.loc[:, ['투표구명', '세대수', '동수', '전용면적 60이하', '전용면적 60-85이하', '전용면적 85-135이하', '전용면적 135초과', '관리비부과면적']]
+    df_house_info_sub1.rename(columns={'세대수': '공동주택 세대수'}, inplace=True)
+    df_house_info_group1 = df_house_info_sub1.groupby('투표구명').sum()
+    df_house_info_group2 = df_house_info_sub1.groupby('투표구명').count().copy()
+    df_house_info_group2 = df_house_info_group2.loc[:, ['동수']]
+    df_house_info_group2.rename(columns={'동수': '공동주택 단지수'}, inplace=True)
+    df_house_info_summary = pd.merge(df_house_info_group2, df_house_info_group1, on='투표구명')
+    df_house_info_summary.to_excel('group_summary.xlsx')
+
+    nec_analysis = pd.merge(nec_analysis, df_house_info_summary, on='투표구명')
+    nec_analysis['공동주택 세대수 커버리지'] = nec_analysis['공동주택 세대수'] / nec_analysis['세대수'] * 100
+    nec_analysis['세대당 평균 관리비부과면적'] = nec_analysis['관리비부과면적'] / nec_analysis['공동주택 세대수']
     nec_analysis.to_excel('nec_anlysis.xlsx')
