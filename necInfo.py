@@ -6,10 +6,11 @@ from abc import *
 class NecInfo(metaclass=ABCMeta):
     def __init__(self):
         self._sg_info = {'선거명': '',
+                         # '선거종류': '',
                          '대수': '',
                          '시도': '',
-                         '선거구(시도)': '',
-                         '선거구(구시군)': ''}
+                         '선거구': '',
+                         '구시군': ''}
         pass
 
     def _read_rows(self, sheet, row_index):
@@ -25,7 +26,7 @@ class NecInfo(metaclass=ABCMeta):
         for index, row in df.iterrows():
             value = row[df.columns[col_index]]
             if str(type(value)) == "<class 'str'>":
-                value = value.strip()
+                value = value.strip().replace(' ', '')
                 if value == '':
                     value = previous
             else:

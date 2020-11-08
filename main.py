@@ -241,12 +241,23 @@ if False:
 if True:
     # 선거인명부 개표결과 분석
     nr_file = '선거통계/[제21대_국회의원선거]_개표단위별_개표결과-용인시정.xlsx'
-    nec_result = nr.NecResult()
-    nec_result.open(nr_file)
+    na_file = 'nec_assembly21.xlsx'
+    nec_result = nr.NecResult('assembly21')
+    nec_result.open(nr_file, na_file)
 
-    np_file = '선거통계/[제21대_국회의원선거]_선거인명부_확정상황-기흥구.xlsx'
-    nec_pollbook = np.NecPollbook()
-    nec_pollbook.open(np_file)
+    nr_file = '선거통계/개표현황(투표구별)-20대 총선 기흥구-용인시정.xlsx'
+    na_file = 'nec_assembly20.xlsx'
+    nec_result = nr.NecResult('assembly20')
+    nec_result.open(nr_file, na_file)
 
-    nec_analysis = na.NecAnalysis(nec_result, nec_pollbook)
-    nec_analysis.run(doc_poll_house_info)
+    nr_file = '선거통계/개표현황(투표구별)-19대 대선 기흥구.xlsx'
+    na_file = 'nec_president19.xlsx'
+    nec_result = nr.NecResult('president19')
+    nec_result.open(nr_file, na_file)
+
+    # np_file = '선거통계/[제21대_국회의원선거]_선거인명부_확정상황-기흥구.xlsx'
+    # nec_pollbook = np.NecPollbook()
+    # nec_pollbook.open(np_file)
+    #
+    # nec_analysis = na.NecAnalysis(nec_result, nec_pollbook)
+    # nec_analysis.run(doc_poll_house_info)

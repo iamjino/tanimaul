@@ -19,7 +19,7 @@ class NecPollbook(NecInfo):
         self._sg_info['선거명'] = sheet[2][0].value.replace(']', '').split(' ')[1]
         texts = sheet[3][0].value[1:-1].split('][')
         self._sg_info['시도'] = texts[0]
-        self._sg_info['선거구(구시군)'] = texts[1]
+        self._sg_info['구시군'] = texts[1]
 
     def _get_labels(self, ws):
         labels = self._read_rows(ws, 4)

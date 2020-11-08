@@ -5,7 +5,8 @@ from govData import GovData
 
 class KaptList(GovData):
     def __init__(self,  key):
-        url = 'http://apis.data.go.kr/1611000/AptListService/getLegaldongAptList'
+        oldurl = 'http://apis.data.go.kr/1611000/AptListService/getLegaldongAptList'
+        url = 'http://apis.data.go.kr/1613000/AptListService1/getLegaldongAptList'
         super(self.__class__, self).__init__(url, key)
 
         self._bjd_code = ''
