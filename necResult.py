@@ -91,15 +91,16 @@ class NecResult(NecInfo):
                     value = texts[0] + '동'
                 col.append(value)
                 print(index, value)
+            df['읍면동명'] = col
 
         df['선거구명'] = self._fill_column_with_previous_cell(df, df.columns.get_loc('선거구명'))
         df['읍면동명'] = self._fill_column_with_previous_cell(df, df.columns.get_loc('읍면동명'))
         df['투표구명'] = self._fill_column_with_this_text(df, df.columns.get_loc('투표구명'), '전체')
 
+        df = df[df.columns[df.columns.notna()]]
         df.drop('계', axis=1, inplace=True)
         df.drop(df.index[df['읍면동명'] == '계'], axis=0, inplace=True)
         df.drop(df.index[df['읍면동명'] == '합계'], axis=0, inplace=True)
-        df = df[df.columns[df.columns.notna()]]
         for col_name in df.columns[3:]:
             df[col_name] = df.apply(lambda x: int(x[col_name].replace(',', ''))
                                     if str(type(x[col_name])) == "<class 'str'>"

@@ -181,7 +181,7 @@ if False:
     rent_prices = postprocess_rent_prices(rent_prices)
     rent_prices.to_excel(doc_rent_price)
 
-if True:
+if False:
     poll_addr_2016 = npa.NecPollAddress('20', '국회의원선거', conf_yi_elecplace_file_2016)
     poll_addr_2017 = npa.NecPollAddress('19', '대통령선거', conf_yi_elecplace_file_2017)
     poll_addr_2020 = npa.NecPollAddress('21', '국회의원선거', conf_yi_elecplace_file_2020)
@@ -242,37 +242,38 @@ if False:
         print(file_path + chart_title)
         house_price_analysis.analysis(addr, file_path, chart_title)
 
-if False:
+if True:
     # 선거인명부 개표결과 분석
-    nr_file_in = '선거통계/개표현황(투표구별)-21대 총선 용인시정.xlsx'
-    nr_file_out = 'nec_assembly21.xlsx'
-    nec_result = nr.NecResult('assembly21')
-    nec_result.open(nr_file_in, nr_file_out)
-
-    nr_file_in = '선거통계/개표현황(투표구별)-20대 총선 용인시정.xlsx'
-    nr_file_out = 'nec_assembly20.xlsx'
-    nec_result = nr.NecResult('assembly20')
-    nec_result.open(nr_file_in, nr_file_out)
+    # nr_file_in = '선거통계/개표현황(투표구별)-21대 총선 용인시정.xlsx'
+    # nr_file_out = 'nec_assembly21.xlsx'
+    # nec_result = nr.NecResult('assembly21')
+    # nec_result.open(nr_file_in, nr_file_out)
+    #
+    # nr_file_in = '선거통계/개표현황(투표구별)-20대 총선 용인시정.xlsx'
+    # nr_file_out = 'nec_assembly20.xlsx'
+    # nec_result = nr.NecResult('assembly20')
+    # nec_result.open(nr_file_in, nr_file_out)
 
     nr_file_in = '선거통계/개표현황(투표구별)-19대 대선 기흥구.xlsx'
     nr_file_out = 'nec_president19.xlsx'
     nec_result = nr.NecResult('president19')
     nec_result.open(nr_file_in, nr_file_out)
-    
-    np_file_in = '선거통계/선거인수현황-21대 총선 기흥구.xlsx'
-    np_file_out = 'nec_pollbook_assembly21.xlsx'
-    nec_pollbook = np.NecPollbook()
-    nec_pollbook.open(np_file_in, np_file_out)
+    #
+    # np_file_in = '선거통계/선거인수현황-21대 총선 기흥구.xlsx'
+    # np_file_out = 'nec_pollbook_assembly21.xlsx'
+    # nec_pollbook = np.NecPollbook()
+    # nec_pollbook.open(np_file_in, np_file_out)
 
-    np_file_in = '선거통계/선거인수현황-20대 총선 기흥구.xlsx'
-    np_file_out = 'nec_pollbook_assembly20.xlsx'
-    nec_pollbook = np.NecPollbook()
-    nec_pollbook.open(np_file_in, np_file_out)
+    # np_file_in = '선거통계/선거인수현황-20대 총선 기흥구.xlsx'
+    # np_file_out = 'nec_pollbook_assembly20.xlsx'
+    # nec_pollbook = np.NecPollbook()
+    # nec_pollbook.open(np_file_in, np_file_out)
 
     np_file_in = '선거통계/선거인수현황-19대 대선 기흥구.xlsx'
     np_file_out = 'nec_pollbook_president19.xlsx'
     nec_pollbook = np.NecPollbook()
     nec_pollbook.open(np_file_in, np_file_out)
-    #
-    # nec_analysis = na.NecAnalysis(nec_result, nec_pollbook)
-    # nec_analysis.run(doc_poll_house_info)
+
+if True:
+    nec_analysis = na.NecAnalysis(nec_result, nec_pollbook)
+    nec_analysis.run(doc_poll_house_info)

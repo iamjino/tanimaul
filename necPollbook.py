@@ -50,7 +50,7 @@ class NecPollbook(NecInfo):
         self.labels = labels
 
     def _read_df(self, in_file):
-        df = pd.read_excel(in_file, skiprows=3)
+        df = pd.read_excel(in_file, skiprows=4)
         df.columns = self.labels
         df = df[df.columns[df.columns.notna()]]
         if self._book_type == 'legacy':

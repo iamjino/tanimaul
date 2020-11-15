@@ -15,6 +15,8 @@ class NecAnalysis():
         self.na = pd.merge(nec_pollbook.items, nec_result_part, on='읍면동투표구명', how='right')
         self.score = nec_result.items.copy()
         self.dongs = self.na['읍면동명'].dropna().unique()
+        self.score_dong_unique = self.score['읍면동명'].unique()
+        self.score_place_unique = self.score['투표구명'].unique()
 
     def get_place_pre_sum(self):
         self.na['당일투표수'] = ''
@@ -44,7 +46,7 @@ class NecAnalysis():
         self.na.drop(self.na.index[pd.isna(self.na['투표구명'])], axis=0, inplace=True)
 
     def get_place_pre_score(self):
-        self.score.drop('읍면동투표구명', axis=1, inplace=True)
+        self.score.drop(['읍면동투표구명', '대수', '선거명', '선거구명'], axis=1, inplace=True)
         self.score['유형'] = '당일투표'
         score = []
 
@@ -61,8 +63,11 @@ class NecAnalysis():
         gu_pre_sum = self.na['관외사전투표수'].sum()
         gu_pre_out_score = self.score.loc[('거소·선상투표', '전체', '당일투표')]
         gu_pre_out_score = gu_pre_out_score.add(self.score.loc[('관외사전투표', '전체', '당일투표')])
-        gu_pre_out_score = gu_pre_out_score.add(self.score.loc[('국외부재자투표', '전체', '당일투표')])
-        gu_pre_out_score = gu_pre_out_score.add(self.score.loc[('잘못 투입·구분된 투표지', '전체', '당일투표')])
+        if '국외부재자투표' in self.score_dong_unique:
+            gu_pre_out_score = gu_pre_out_score.add(self.score.loc[('국외부재자투표', '전체', '당일투표')])
+        if '재외투표' in self.score_dong_unique:
+            gu_pre_out_score = gu_pre_out_score.add(self.score.loc[('재외투표', '전체', '당일투표')])
+        gu_pre_out_score = gu_pre_out_score.add(self.score.loc[('잘못투입·구분된투표지', '전체', '당일투표')])
 
         for dong in self.dongs:
             for place in self.na.loc[dong].index:
@@ -72,13 +77,15 @@ class NecAnalysis():
                 score.append(place_pre_score)
 
         self.score = self.score.append(score)
-        self.score.drop(['거소·선상투표', '관외사전투표', '국외부재자투표', '잘못 투입·구분된 투표지'], axis=0, level=0, inplace=True)
-        self.score.drop(['소계', '관내사전투표'], axis=0, level=1, inplace=True)
+        self.score.drop(['거소·선상투표', '관외사전투표', '국외부재자투표', '재외투표', '잘못투입·구분된투표지'], axis=0, level=0, inplace=True)
+        self.score.drop(['소계', '계', '관내사전투표'], axis=0, level=1, inplace=True)
         self.score.sort_index(inplace=True)
-        print(self.score.loc[('국외부재자투표(공관)', '전체', '당일투표'), '투표수'])
 
     def get_score_analysis(self):
-        total_valid = self.score['투표수'].sum() - self.score.loc[('국외부재자투표(공관)', '전체', '당일투표'), '투표수']
+        if '국외부재자투표(공관)' in self.score_dong_unique:
+            total_valid = self.score['투표수'].sum() - self.score.loc[('국외부재자투표(공관)', '전체', '당일투표'), '투표수']
+        else:
+            total_valid = self.score['투표수'].sum()
         stat_score = []
         analysis_total_ratio = []
         analysis_ratio = []
@@ -125,10 +132,10 @@ class NecAnalysis():
         self.na = pd.merge(self.na, df_house_info_summary, on='투표구명')
         self.na['공동주택 세대수 커버리지'] = self.na['공동주택 세대수'] / self.na['세대수'] * 100
         self.na['세대당 평균 관리비부과면적'] = self.na['단지 전용면적합'] / self.na['공동주택 세대수']
-        self.na.to_excel('nec_anlysis.xlsx')
 
     def run(self, doc_poll_house_info):
         self.get_place_pre_sum()
         self.get_place_pre_score()
         self.get_score_analysis()
-        self.merge_house_info(doc_poll_house_info)
+        # self.merge_house_info(doc_poll_house_info)
+        self.na.to_excel('nec_anlysis.xlsx')
