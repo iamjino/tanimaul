@@ -120,6 +120,15 @@ class HouseInfo:
             text = ' '.join(addrs)
             self.items.at[k, '동이하주소'] = text
 
+    def fill_data(self, data_file):
+        fill = pd.read_excel(data_file)
+        labels = fill.columns[2:-1]
+        for fill_index, addr in enumerate(fill['주소']):
+            indexes = self.items.index[self.items['동이하주소'] == addr]
+            if indexes.size > 0:
+                for label in labels:
+                    self.items.at[indexes[0], label] = fill.at[fill_index, label]
+
     def print(self):
         print('용인시 제공 공동주택 단지수:', self.yicity.index.size)
         print('KAPT에서 입수한 공동주택 단지수:', self.kapt.index.size)

@@ -82,7 +82,7 @@ doc_kapt_info = 'doc/KAPT 공동주택 현황.xlsx'
 conf_kapt_info_fix = 'conf/KAPT 공동주택 현황-수정.xlsx'
 
 doc_house_info = 'doc/공동주택 현황.xlsx'
-conf_house_info = 'conf/공동주택 현황-수정.xlsx'
+conf_house_info = 'conf/공동주택 현황-보완.xlsx'
 doc_poll_addr_list = 'doc/투표구 관할주소.xlsx'
 doc_poll_house_list = 'doc/투표구 관할단지.xlsx'
 doc_trade_price = 'doc/주택 매매 현황.xlsx'
@@ -120,14 +120,13 @@ if False:
     kapt_info_final.to_excel(doc_kapt_info)
     print(kapt_info_final)
 
-if False:
+if True:
     house_info = hi.HouseInfo(conf_yiapt_list_file, conf_yiapt_list_sheet, doc_kapt_info, conf_kapt_info_fix)
-    house_info_fix = pd.read_excel(conf_house_info)
 
     house_info.run()
+    house_info.fill_data(conf_house_info)
     house_info.print()
     house_info.to_excel(doc_house_info)
-
 
 if False:
     rt_urls = {'apt_trade': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade',
@@ -242,7 +241,7 @@ if False:
         print(file_path + chart_title)
         house_price_analysis.analysis(addr, file_path, chart_title)
 
-if True:
+if False:
     # 선거인명부 개표결과 분석
     # nr_file_in = '선거통계/개표현황(투표구별)-21대 총선 용인시정.xlsx'
     # nr_file_out = 'nec_assembly21.xlsx'
