@@ -70,8 +70,9 @@ conf_bjd_code = './conf/용인시 법정동 ᄏ
 conf_yiapt_list_file = 'conf/용인시 공동주택 현황.xlsx'
 conf_yiapt_list_sheet = 'summary'
 
-conf_yi_elecplace_file = 'conf/투표구 관할구역-21대 총선-용인시기흥구.xlsx'
-conf_yi_elecplace_sheet = '2020년 제21대 국회의원선거'
+conf_yi_elecplace_file_2017 = 'conf/투표구 관할구역-19대 대선-용인시기흥구.xlsx'
+conf_yi_elecplace_file_2016 = 'conf/투표구 관할구역-20대 총선-용인시기흥구.xlsx'
+conf_yi_elecplace_file_2020 = 'conf/투표구 관할구역-21대 총선-용인시기흥구.xlsx'
 
 conf_yiaddr_file = 'conf/용인시 통리반 관할구역.xlsx'
 conf_yiaddr_sheet = 'step1'
@@ -179,9 +180,12 @@ if False:
     rent_prices = get_deal_list('rent', ['apt', 'rh'])
     rent_prices = postprocess_rent_prices(rent_prices)
     rent_prices.to_excel(doc_rent_price)
-if False:
-    poll_addr = npa.NecPollAddress(conf_yi_elecplace_file, conf_yi_elecplace_sheet)
-    poll_addr.run()
+
+if True:
+    poll_addr_2016 = npa.NecPollAddress('20', '국회의원선거', conf_yi_elecplace_file_2016)
+    poll_addr_2017 = npa.NecPollAddress('19', '대통령선거', conf_yi_elecplace_file_2017)
+    poll_addr_2020 = npa.NecPollAddress('21', '국회의원선거', conf_yi_elecplace_file_2020)
+    poll_addr = pd.concat([poll_addr_2016.items, poll_addr_2017.items, poll_addr_2020.items])
     poll_addr.to_excel(doc_poll_addr_list)
 
 if False:
@@ -238,7 +242,7 @@ if False:
         print(file_path + chart_title)
         house_price_analysis.analysis(addr, file_path, chart_title)
 
-if True:
+if False:
     # 선거인명부 개표결과 분석
     nr_file_in = '선거통계/개표현황(투표구별)-21대 총선 용인시정.xlsx'
     nr_file_out = 'nec_assembly21.xlsx'
