@@ -70,7 +70,7 @@ conf_bjd_code = './conf/용인시 법정동 ᄏ
 conf_yiapt_list_file = 'conf/용인시 공동주택 현황.xlsx'
 conf_yiapt_list_sheet = 'summary'
 
-conf_yi_elecplace_file = 'conf/용인시 투표구 관할구역.xlsx'
+conf_yi_elecplace_file = 'conf/투표구 관할구역-21대 총선-용인시기흥구.xlsx'
 conf_yi_elecplace_sheet = '2020년 제21대 국회의원선거'
 
 conf_yiaddr_file = 'conf/용인시 통리반 관할구역.xlsx'
@@ -240,24 +240,35 @@ if False:
 
 if True:
     # 선거인명부 개표결과 분석
-    nr_file = '선거통계/[제21대_국회의원선거]_개표단위별_개표결과-용인시정.xlsx'
-    na_file = 'nec_assembly21.xlsx'
+    nr_file_in = '선거통계/개표현황(투표구별)-21대 총선 용인시정.xlsx'
+    nr_file_out = 'nec_assembly21.xlsx'
     nec_result = nr.NecResult('assembly21')
-    nec_result.open(nr_file, na_file)
+    nec_result.open(nr_file_in, nr_file_out)
 
-    nr_file = '선거통계/개표현황(투표구별)-20대 총선 기흥구-용인시정.xlsx'
-    na_file = 'nec_assembly20.xlsx'
+    nr_file_in = '선거통계/개표현황(투표구별)-20대 총선 용인시정.xlsx'
+    nr_file_out = 'nec_assembly20.xlsx'
     nec_result = nr.NecResult('assembly20')
-    nec_result.open(nr_file, na_file)
+    nec_result.open(nr_file_in, nr_file_out)
 
-    nr_file = '선거통계/개표현황(투표구별)-19대 대선 기흥구.xlsx'
-    na_file = 'nec_president19.xlsx'
+    nr_file_in = '선거통계/개표현황(투표구별)-19대 대선 기흥구.xlsx'
+    nr_file_out = 'nec_president19.xlsx'
     nec_result = nr.NecResult('president19')
-    nec_result.open(nr_file, na_file)
+    nec_result.open(nr_file_in, nr_file_out)
+    
+    np_file_in = '선거통계/선거인수현황-21대 총선 기흥구.xlsx'
+    np_file_out = 'nec_pollbook_assembly21.xlsx'
+    nec_pollbook = np.NecPollbook()
+    nec_pollbook.open(np_file_in, np_file_out)
 
-    # np_file = '선거통계/[제21대_국회의원선거]_선거인명부_확정상황-기흥구.xlsx'
-    # nec_pollbook = np.NecPollbook()
-    # nec_pollbook.open(np_file)
+    np_file_in = '선거통계/선거인수현황-20대 총선 기흥구.xlsx'
+    np_file_out = 'nec_pollbook_assembly20.xlsx'
+    nec_pollbook = np.NecPollbook()
+    nec_pollbook.open(np_file_in, np_file_out)
+
+    np_file_in = '선거통계/선거인수현황-19대 대선 기흥구.xlsx'
+    np_file_out = 'nec_pollbook_president19.xlsx'
+    nec_pollbook = np.NecPollbook()
+    nec_pollbook.open(np_file_in, np_file_out)
     #
     # nec_analysis = na.NecAnalysis(nec_result, nec_pollbook)
     # nec_analysis.run(doc_poll_house_info)

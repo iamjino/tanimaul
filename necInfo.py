@@ -20,7 +20,7 @@ class NecInfo(metaclass=ABCMeta):
             labels.append(value)
         return labels
 
-    def _get_filled_column(self, df, col_index):
+    def _fill_column_with_previous_cell(self, df, col_index):
         col = []
         previous = ''
         for index, row in df.iterrows():
@@ -35,9 +35,9 @@ class NecInfo(metaclass=ABCMeta):
             previous = value
         return col
 
-    def _get_text_filled_column(self, df, col_index, text):
+    def _fill_column_with_this_text(self, df, col_index, this_text):
         col = []
-        previous = text
+        previous = this_text
         for index, row in df.iterrows():
             value = row[df.columns[col_index]]
             if str(type(value)) == "<class 'str'>":

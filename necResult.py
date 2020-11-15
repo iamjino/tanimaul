@@ -92,9 +92,9 @@ class NecResult(NecInfo):
                 col.append(value)
                 print(index, value)
 
-        df['선거구명'] = self._get_filled_column(df, 0)
-        df['읍면동명'] = self._get_filled_column(df, 1)
-        df['투표구명'] = self._get_text_filled_column(df, 2, '전체')
+        df['선거구명'] = self._fill_column_with_previous_cell(df, df.columns.get_loc('선거구명'))
+        df['읍면동명'] = self._fill_column_with_previous_cell(df, df.columns.get_loc('읍면동명'))
+        df['투표구명'] = self._fill_column_with_this_text(df, df.columns.get_loc('투표구명'), '전체')
 
         df.drop('계', axis=1, inplace=True)
         df.drop(df.index[df['읍면동명'] == '계'], axis=0, inplace=True)
