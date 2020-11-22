@@ -9,11 +9,11 @@ def day_voter(x):
 
 
 class NecAnalysis():
-    def __init__(self, nec_result, nec_pollbook):
-        nec_result_part = nec_result.items[['읍면동투표구명', '읍면동명', '투표구명', '선거인수', '투표수', '기권수']].copy()
+    def __init__(self, result_items, book_items):
+        nec_result_part = result_items[['읍면동투표구명', '읍면동명', '투표구명', '선거인수', '투표수', '기권수']].copy()
         nec_result_part.rename(columns={'읍면동명': '읍면동명_결과', '투표구명': '투표구명_결과'}, inplace=True)
-        self.na = pd.merge(nec_pollbook.items, nec_result_part, on='읍면동투표구명', how='right')
-        self.score = nec_result.items.copy()
+        self.na = pd.merge(book_items, nec_result_part, on='읍면동투표구명', how='right')
+        self.score = result_items.copy()
         self.dongs = self.na['읍면동명'].dropna().unique()
         self.score_dong_unique = self.score['읍면동명'].unique()
         self.score_place_unique = self.score['투표구명'].unique()

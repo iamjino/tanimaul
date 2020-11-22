@@ -4,17 +4,18 @@ from necInfo import NecInfo
 
 
 class NecPollbook(NecInfo):
-    def __init__(self):
+    def __init__(self, file_in):
         super().__init__()
         self._book_type = ''
+        self.open(file_in)
 
-    def open(self, in_file, out_file):
-        ws = load_workbook(in_file)['Sheet1']
+    def open(self, file_in):
+        ws = load_workbook(file_in)['Sheet1']
         self._get_sg_info(ws)
         self._get_labels(ws)
-        self._read_df(in_file)
+        self._read_df(file_in)
         print(self.items.head(20))
-        self.items.to_excel(out_file)
+        # self.items.to_excel(out_file)
 
     def _get_sg_info(self, sheet):
         if sheet[2][0].value == '선거인수현황':
@@ -49,8 +50,8 @@ class NecPollbook(NecInfo):
         print(labels)
         self.labels = labels
 
-    def _read_df(self, in_file):
-        df = pd.read_excel(in_file, skiprows=4)
+    def _read_df(self, file_in):
+        df = pd.read_excel(file_in, skiprows=4)
         df.columns = self.labels
         df = df[df.columns[df.columns.notna()]]
         if self._book_type == 'legacy':

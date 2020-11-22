@@ -4,25 +4,25 @@ from necInfo import NecInfo
 
 
 class NecResult(NecInfo):
-    def __init__(self, necId):
+    def __init__(self, necId, file_in):
         super().__init__()
         self.id = necId
+        self.open(file_in)
         pass
 
-    def open(self, in_file, out_file):
-        ws = load_workbook(in_file)['Sheet1']
+    def open(self, file_in):
+        ws = load_workbook(file_in)['Sheet1']
         self._get_sg_info(ws)
         self._get_labels(ws)
-        self._read_df(in_file)
+        self._read_df(file_in)
         print(self.items.head(30))
-        self.items.to_excel(out_file)
 
     def _get_sg_info(self, sheet):
-        if self.id == 'assembly21':
+        if self.id == '21대 총선':
             self._get_sg_info1(sheet)
-        elif self.id == 'assembly20':
+        elif self.id == '20대 총선':
             self._get_sg_info2(sheet)
-        elif self.id == 'president19':
+        elif self.id == '19대 대선':
             self._get_sg_info3(sheet)
 
     def _get_sg_info1(self, sheet):
