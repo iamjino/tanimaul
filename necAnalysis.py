@@ -9,7 +9,10 @@ def day_voter(x):
 
 
 class NecAnalysis():
-    def __init__(self, result_items, book_items):
+    def __init__(self, file_result, file_book):
+        result_items = pd.read_excel(file_result)
+        book_items = pd.read_excel(file_book)
+
         nec_result_part = result_items[['읍면동투표구명', '읍면동명', '투표구명', '선거인수', '투표수', '기권수']].copy()
         nec_result_part.rename(columns={'읍면동명': '읍면동명_결과', '투표구명': '투표구명_결과'}, inplace=True)
         self.na = pd.merge(book_items, nec_result_part, on='읍면동투표구명', how='right')
@@ -77,9 +80,20 @@ class NecAnalysis():
                 score.append(place_pre_score)
 
         self.score = self.score.append(score)
+        self.score.rename({'무효 투표수': '무효 투표', '기권수': '기권'}, axis='columns', inplace=True)
         self.score.drop(['거소·선상투표', '관외사전투표', '국외부재자투표', '재외투표', '잘못투입·구분된투표지'], axis=0, level=0, inplace=True)
         self.score.drop(['소계', '계', '관내사전투표'], axis=0, level=1, inplace=True)
         self.score.sort_index(inplace=True)
+
+    def copy_series(self, org_list, dong, place):
+        new_list = org_list.copy()
+        new_list.rename((dong, place), inplace=True)
+        return new_list
+
+    def concat_list(self, add_list):
+        df_list = pd.DataFrame(add_list)
+        df_list.drop(['선거인수', '투표수'], axis=1, inplace=True)
+        self.na = pd.concat([self.na, df_list], axis=1)
 
     def get_score_analysis(self):
         if '국외부재자투표(공관)' in self.score_dong_unique:
@@ -88,35 +102,48 @@ class NecAnalysis():
             total_valid = self.score['투표수'].sum()
         stat_score = []
         analysis_total_ratio = []
-        analysis_ratio = []
+
+        ratio_sums = []
+        ratio_pres = []
+        ratio_days = []
         for dong in self.dongs:
             for place in self.na.loc[dong].index:
                 place_score = self.score.loc[(dong, place)]
                 score_sum = place_score.sum()
                 score_sum.rename((dong, place, '소계'), inplace=True)
-        
-                score_ratio = score_sum / score_sum['투표수'] * 100
-                score_ratio_analysis = score_ratio.copy()
-                score_total_ratio_anlaysis = score_sum / total_valid * 100 * self.na.index.size
-                score_ratio.rename((dong, place, '비율'), inplace=True)
-                score_ratio_analysis.rename((dong, place), inplace=True)
-                score_total_ratio_anlaysis.rename((dong, place), inplace=True)
-        
                 stat_score.append(score_sum)
-                stat_score.append(score_ratio)
-                analysis_ratio.append(score_ratio_analysis)
+                total_vote = score_sum['투표수']
+
+                ratio_sum = score_sum / total_vote * 100
+                ratio_sum.rename((dong, place, '비율'), inplace=True)
+                stat_score.append(ratio_sum)
+
+                score_pre = self.score.loc[(dong, place, ['관내사전투표', '관외사전투표'])].sum()
+                score_pre.rename((dong, place, '사전소계'), inplace=True)
+                stat_score.append(score_pre)
+                ratio_pre = score_pre / total_vote * 100
+                ratio_pre.rename((dong, place, '사전비율'), inplace=True)
+                stat_score.append(ratio_pre)
+
+                score_day = self.score.loc[(dong, place, ['당일투표'])].sum()
+                ratio_day = score_day / total_vote * 100
+                ratio_day.rename((dong, place, '당일비율'), inplace=True)
+                stat_score.append(ratio_day)
+
+                ratio_sums.append(self.copy_series(ratio_sum, dong, place))
+                ratio_pres.append(self.copy_series(ratio_pre, dong, place))
+                ratio_days.append(self.copy_series(ratio_day, dong, place))
+
+                score_total_ratio_anlaysis = score_sum / total_valid * 100 * self.na.index.size
+                score_total_ratio_anlaysis.rename((dong, place), inplace=True)
                 analysis_total_ratio.append(score_total_ratio_anlaysis)
-        
+
         self.score = self.score.append(stat_score)
         self.score.sort_index(inplace=True)
-        self.score.to_excel('nec_score.xlsx')
-        
-        df_ratio = pd.DataFrame(analysis_ratio)
-        df_ratio.drop(['선거인수', '투표수'], axis=1, inplace=True)
-        df_total_ratio = pd.DataFrame(analysis_total_ratio)
-        df_total_ratio.drop(['선거인수', '투표수'], axis=1, inplace=True)
-        self.na = pd.concat([self.na, df_ratio], axis=1)
-        self.na = pd.concat([self.na, df_total_ratio], axis=1)
+
+        self.concat_list(ratio_sums)
+        self.concat_list(ratio_pres)
+        self.concat_list(ratio_days)
 
     def merge_house_info(self, doc_poll_house_info):
         df_house_infos = pd.read_excel(doc_poll_house_info)
@@ -138,4 +165,3 @@ class NecAnalysis():
         self.get_place_pre_score()
         self.get_score_analysis()
         # self.merge_house_info(doc_poll_house_info)
-        self.na.to_excel('nec_anlysis.xlsx')
