@@ -1,10 +1,10 @@
 import pandas as pd
 
 
-class NecPollAddress:
-    def __init__(self, sg_num, sg_name, in_file):
+class NecZoneAddress:
+    def __init__(self, sg_id, in_file):
         self.parse(in_file)
-        self.set_properties(sg_num, sg_name)
+        self.set_properties(sg_id)
 
     def parse(self, in_file):
         df = pd.read_excel(in_file, skiprows=2)
@@ -46,9 +46,10 @@ class NecPollAddress:
 
         self.items = pd.DataFrame(infos)
 
-    def set_properties(self, sg_num, sg_name):
-        self.items.insert(0, '대수', sg_num)
-        self.items.insert(1, '선거명', sg_name)
+    def set_properties(self, sg_id):
+        sg_id_texts = sg_id.split(' ')
+        self.items.insert(0, '대수', sg_id_texts[0])
+        self.items.insert(1, '선거명', sg_id_texts[1])
 
-    def to_excel(self, xlsx_name, sheet_name='sheet1'):
-        self.items.to_excel(xlsx_name, sheet_name=sheet_name)
+    # def to_excel(self, xlsx_name, sheet_name='sheet1'):
+    #     self.items.to_excel(xlsx_name, sheet_name=sheet_name)

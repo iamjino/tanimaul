@@ -1,21 +1,21 @@
 import pandas as pd
 
-class NecPollHouse:
-    def __init__(self, conf_yiaddr_file, conf_yiaddr_sheet, conf_yiaddr_file_fix, doc_house_info, doc_poll_addr_list):
+class NecZoneHouse:
+    def __init__(self, law_addr_file, law_addr_sheet, law_addr_file_fix, doc_house_info, doc_poll_addr_list):
         self._house_info = pd.read_excel(doc_house_info)
         self._poll_addr = pd.read_excel(doc_poll_addr_list)
-        self.conf_yiaddr_file = conf_yiaddr_file
-        self.conf_yiaddr_sheet = conf_yiaddr_sheet
-        self.conf_yiaddr_file_fix = conf_yiaddr_file_fix
+        self.law_addr_file = law_addr_file
+        self.law_addr_sheet = law_addr_sheet
+        self.law_addr_file_fix = law_addr_file_fix
         pass
 
     def run(self):
-        yi_zone = pd.read_excel(self.conf_yiaddr_file, sheet_name=self.conf_yiaddr_sheet, index_col=None)
+        yi_zone = pd.read_excel(self.law_addr_file, sheet_name=self.law_addr_sheet, index_col=None)
         temp1 = yi_zone[['개정일', '행정동', '통명', '건물', '법정동', '통', '반', '읍면동', '통리명', '반의명칭', '관할구역']]
         temp1 = temp1[temp1['반의명칭'].notnull()]
         temp1 = temp1[temp1['건물'].notnull()]
 
-        yi_zone_fix = pd.read_excel(self.conf_yiaddr_file_fix, index_col=None)
+        yi_zone_fix = pd.read_excel(self.law_addr_file_fix, index_col=None)
         addr_replace = yi_zone_fix[yi_zone_fix['타입'] == 'replace'].reset_index(drop=True)
         addr_change = yi_zone_fix[yi_zone_fix['타입'] == 'change'].reset_index(drop=True)
         house_addr = temp1.reset_index(drop=True)
@@ -41,7 +41,7 @@ class NecPollHouse:
             house_addr.at[i, '관할구역'] = text
 
         temp1['주소'] = ''
-        dong_changes = ['죽전1동', '상현2동']
+        dong_changes = ['죽전1동', '죽전2동', '상현2동']
         for i in range(house_addr.index.size):
             text = house_addr.at[i, '관할구역']
             addrs = text.split(' ')
