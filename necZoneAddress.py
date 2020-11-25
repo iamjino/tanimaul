@@ -8,15 +8,17 @@ class NecZoneAddress:
 
     def parse(self, in_file):
         df = pd.read_excel(in_file, skiprows=2)
-        key_gu = '구·시·군명'
+        key_si = '시'
+        key_gu = '구'
         key_place = '투표구명'
-        key_region = '투표구 관할구역'
         key_hj_dong = '행정동'
         key_bj_dong = '법정동'
         key_tong = '통'
-        infos = {key_gu: [], key_place: [], key_hj_dong: [], key_bj_dong: [], key_tong: []}
+        infos = {key_si: [], key_gu: [], key_place: [], key_hj_dong: [], key_bj_dong: [], key_tong: []}
         for index in range(len(df)):
-            value_gu = df.iloc[index][0]
+            sigus = df.iloc[index][0].split('시')
+            value_si = sigus[0] + '시'
+            value_gu = sigus[1]
             value_place = df.iloc[index][1]
             value_place_dong = value_place.split('제')[0]
             value_regions = df.iloc[index][2].split('/')
@@ -38,6 +40,7 @@ class NecZoneAddress:
                         tong_limit = [tong, tong]
                     tong_range = range(int(tong_limit[0]), int(tong_limit[1])+1)
                     for value_tong in tong_range:
+                        infos[key_si].append(value_si)
                         infos[key_gu].append(value_gu)
                         infos[key_place].append(value_place)
                         infos[key_hj_dong].append(value_place_dong)

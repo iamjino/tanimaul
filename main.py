@@ -83,8 +83,7 @@ doc_rent_price = 'doc/주택 임대차 현황.xlsx'
 
 
 
-doc_zone_house_list = 'doc/투표구 관할단지-임시.xlsx'
-doc_zone_house_info = 'doc/투표구 관할단지 현황.xlsx'
+
 sg_ids = ['20대 총선', '21대 총선', '19대 대선']
 
 start_year = 2006
@@ -183,23 +182,16 @@ if True:
 # conf_zone_addr = {"20대 총선": ['conf/투표구 관할구역-20대 총선 기흥구.xlsx', 'conf/투표구 관할구역-20대 총선 수지구.xlsx'],
 #                   "19대 대선": ['conf/투표구 관할구역-19대 대선 기흥구.xlsx', 'conf/투표구 관할구역-19대 대선 수지구.xlsx'],
 #                   "21대 총선": ['conf/투표구 관할구역-21대 총선 기흥구.xlsx']}
-    conf_zone_addr = {"20대 총선": ['conf/투표구 관할구역-20대 총선 기흥구.xlsx'],
-                      "19대 대선": ['conf/투표구 관할구역-19대 대선 기흥구.xlsx'],
-                      "21대 총선": ['conf/투표구 관할구역-21대 총선 기흥구.xlsx']}
+    conf_zone_addr = {"20대 총선": ['conf/투표구 관할구역-20대 총선 기흥구.xlsx'],
+                      "19대 대선": ['conf/투표구 관할구역-19대 대선 기흥구.xlsx'],
+                      "21대 총선": ['conf/투표구 관할구역-21대 총선 기흥구.xlsx']}
     doc_zone_addr = {}
-    # doc_zone_addr = {"20대 총선": 'doc/투표구 관할주소-20대 총선.xlsx',
-    #                  "19대 대선": 'doc/투표구 관할주소-19대 대선.xlsx',
-    #                  "21대 총선": 'doc/투표구 관할주소-21대 총선.xlsx'}
-    conf_law_addr = {"20대 총선": 'conf/용인시 통리반 설치 조례-20대 총선.xlsx',
-                     "19대 대선": 'conf/용인시 통리반 설치 조례-19대 대선.xlsx',
-                     "21대 총선": 'conf/용인시 통리반 설치 조례-21대 총선.xlsx'}
-    conf_law_addr_sheet = 'analysis'
-    conf_law_addr_fix = 'conf/용인시 통리반 설치 조례-수정.xlsx'
-
-    # conf_yiaddr_file = 'conf/용인시 통리반 설치 조례-200110.xlsx'
+    # doc_zone_addr = {"20대 총선": 'doc/투표소 동통주소-20대 총선.xlsx',
+    #                  "19대 대선": 'doc/투표소 동통주소-19대 대선.xlsx',
+    #                  "21대 총선": 'doc/투표소 동통주소-21대 총선.xlsx'}
 
     def iter_nza(sg_id, file_ins):
-        file_out = 'doc/투표구 관할주소-' + sg_id + '.xlsx'
+        file_out = 'doc/투표구 동통주소-' + sg_id + '.xlsx'
         dfs = []
         for file_in in file_ins[sg_id]:
             zone_addr = nza.NecZoneAddress(sg_id, file_in)
@@ -211,24 +203,35 @@ if True:
         doc_zone_addr[sg_id] = iter_nza(sg_id, conf_zone_addr)
 
 if True:
-    zone_house = nzh.NecZoneHouse(conf_law_addr, conf_law_addr_sheet, conf_law_addr_fix, doc_house_info, doc_zone_addr)
-    zone_house.run()
-    zone_house.to_excel(doc_zone_house_list)
+    conf_law_addr = {"20대 총선": 'conf/용인시 통리반 설치 조례-20대 총선.xlsx',
+                     "19대 대선": 'conf/용인시 통리반 설치 조례-19대 대선.xlsx',
+                     "21대 총선": 'conf/용인시 통리반 설치 조례-21대 총선.xlsx'}
+    conf_law_addr_sheet = 'analysis'
+    conf_law_addr_fix = 'conf/용인시 통리반 설치 조례-수정.xlsx'
+    doc_zone_house_info = 'doc/투표구 관할단지 현황.xlsx'
+
+    doc_zone_house_list = {}
+    for sg_id in sg_ids:
+        file_out = 'doc/투표구 관할단지-' + sg_id + '.xlsx'
+        zone_house = nzh.NecZoneHouse(conf_law_addr[sg_id], conf_law_addr_sheet, conf_law_addr_fix, doc_house_info, doc_zone_addr[sg_id])
+        zone_house.run()
+        zone_house.to_excel(file_out)
+        doc_zone_house_list[sg_id] = file_out
 
 if False:
     # 투표소 공동주택 정보 생성
     df_house_info_full = pd.read_excel(doc_house_info)
     df_house_info_full.drop(['법정동', '단지명'], axis=1, inplace=True)
-    df_house_info_poll = pd.read_excel(doc_zone_house_list)
-    df_house_info_poll['간략 법정동주소'] = ''
+    for sg_id in sg_ids:
+        df_zone_house = pd.read_excel(doc_zone_house_list[sg_id])
+        df_zone_house['간략 법정동주소'] = ''
 
-    for index, row in df_house_info_poll.iterrows():
-        value = row['법정동']
-        if value in ['죽전1동', '상현2동']:
-            df_house_info_poll.at[index, '간략 법정동주소'] = '수지구 ' + row['주소']
-        else:
-            df_house_info_poll.at[index, '간략 법정동주소'] = '기흥구 ' + row['주소']
-    df_house_infos = pd.merge(df_house_info_poll, df_house_info_full, on='간략 법정동주소')
+        for index, row in df_zone_house.iterrows():
+            value = row['법정동']
+            df_zone_house.at[index, '간략 법정동주소'] = row['구'] + ' ' + row['주소']
+
+    # self.score.drop(['읍면동투표구명', '대수', '선거명', '선거구명'], axis=1, inplace=True)
+        df_house_infos = pd.merge(df_house_info_full, df_zone_house, on='간략 법정동주소')
     df_house_infos.to_excel(doc_zone_house_info)
 
 if False:
@@ -264,7 +267,7 @@ if False:
         print(file_path + chart_title)
         house_price_analysis.analysis(addr, file_path, chart_title)
 
-if True:
+if False:
     # 선거인명부 개표결과 분석
     conf_poll_result = {
         "20대 총선": ['conf/개표결과-20대 총선 용인시갑.xlsx', 'conf/개표결과-20대 총선 용인시을.xlsx', 'conf/개표결과-20대 총선 용인시병.xlsx', 'conf/개표결과-20대 총선 용인시정.xlsx'],
@@ -344,7 +347,7 @@ if False:
         "21대 총선": ['doc/선거인수현황 정리-21대 총선 용인시갑.xlsx', 'doc/선거인수현황 정리-21대 총선 용인시을.xlsx', 'doc/선거인수현황 정리-21대 총선 용인시병.xlsx', 'doc/선거인수현황 정리-21대 총선 용인시정.xlsx'],
         "19대 대선": ['doc/선거인수현황 정리-19대 대선 기흥구.xlsx', 'doc/선거인수현황 정리-19대 대선 수지구.xlsx', 'doc/선거인수현황 정리-19대 대선 처인구.xlsx']
     }
-if True:
+if False:
     doc_poll_score = {}
     doc_poll_analysis = {}
     def iter_analysis(file_results, file_books):
