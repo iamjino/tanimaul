@@ -81,10 +81,10 @@ conf_rent_rate = 'conf/전월세 전환율.xlsx
 doc_trade_price = 'doc/주택 매매 현황.xlsx'
 doc_rent_price = 'doc/주택 임대차 현황.xlsx'
 
+doc_zone_house_info = 'doc/투표구 관할단지 현황.xlsx'
 
 
-
-sg_ids = ['20대 총선', '21대 총선', '19대 대선']
+sg_ids = ['20대 총선', '19대 대선', '21대 총선']
 
 start_year = 2006
 start_month = 1
@@ -178,7 +178,7 @@ if False:
 
 # Reruned until here
 
-if True:
+if False:
 # conf_zone_addr = {"20대 총선": ['conf/투표구 관할구역-20대 총선 기흥구.xlsx', 'conf/투표구 관할구역-20대 총선 수지구.xlsx'],
 #                   "19대 대선": ['conf/투표구 관할구역-19대 대선 기흥구.xlsx', 'conf/투표구 관할구역-19대 대선 수지구.xlsx'],
 #                   "21대 총선": ['conf/투표구 관할구역-21대 총선 기흥구.xlsx']}
@@ -191,7 +191,7 @@ if True:
     #                  "21대 총선": 'doc/투표소 동통주소-21대 총선.xlsx'}
 
     def iter_nza(sg_id, file_ins):
-        file_out = 'doc/투표구 동통주소-' + sg_id + '.xlsx'
+        file_out = 'doc/투표소 동통주소-' + sg_id + '.xlsx'
         dfs = []
         for file_in in file_ins[sg_id]:
             zone_addr = nza.NecZoneAddress(sg_id, file_in)
@@ -202,37 +202,35 @@ if True:
     for sg_id in sg_ids:
         doc_zone_addr[sg_id] = iter_nza(sg_id, conf_zone_addr)
 
-if True:
+if False:
     conf_law_addr = {"20대 총선": 'conf/용인시 통리반 설치 조례-20대 총선.xlsx',
                      "19대 대선": 'conf/용인시 통리반 설치 조례-19대 대선.xlsx',
                      "21대 총선": 'conf/용인시 통리반 설치 조례-21대 총선.xlsx'}
     conf_law_addr_sheet = 'analysis'
     conf_law_addr_fix = 'conf/용인시 통리반 설치 조례-수정.xlsx'
-    doc_zone_house_info = 'doc/투표구 관할단지 현황.xlsx'
 
     doc_zone_house_list = {}
     for sg_id in sg_ids:
         file_out = 'doc/투표구 관할단지-' + sg_id + '.xlsx'
         zone_house = nzh.NecZoneHouse(conf_law_addr[sg_id], conf_law_addr_sheet, conf_law_addr_fix, doc_house_info, doc_zone_addr[sg_id])
         zone_house.run()
-        zone_house.to_excel(file_out)
+        zone_house.items.to_excel(file_out, index=False)
         doc_zone_house_list[sg_id] = file_out
 
 if False:
     # 투표소 공동주택 정보 생성
-    df_house_info_full = pd.read_excel(doc_house_info)
-    df_house_info_full.drop(['법정동', '단지명'], axis=1, inplace=True)
+    df_house_infos = pd.read_excel(doc_house_info)
     for sg_id in sg_ids:
         df_zone_house = pd.read_excel(doc_zone_house_list[sg_id])
         df_zone_house['간략 법정동주소'] = ''
+        df_zone_house.rename(columns={'투표구명': sg_id}, inplace=True)
 
         for index, row in df_zone_house.iterrows():
-            value = row['법정동']
             df_zone_house.at[index, '간략 법정동주소'] = row['구'] + ' ' + row['주소']
 
-    # self.score.drop(['읍면동투표구명', '대수', '선거명', '선거구명'], axis=1, inplace=True)
-        df_house_infos = pd.merge(df_house_info_full, df_zone_house, on='간략 법정동주소')
-    df_house_infos.to_excel(doc_zone_house_info)
+        df_zone_house_subset = df_zone_house[[sg_id, '간략 법정동주소']]
+        df_house_infos = pd.merge(df_house_infos, df_zone_house_subset, on='간략 법정동주소')
+    df_house_infos.to_excel(doc_zone_house_info, index=False)
 
 if False:
     # 주택 매매 차트 생성: 투표소 공동주택 정보 생성 활성화 필요
@@ -336,7 +334,7 @@ if False:
             doc_poll_book[sg_id] = rearrange_book(sg_id, doc_poll_book)
     print(doc_poll_book)
 
-if False:
+if True:
     doc_poll_result = {
         "20대 총선": ['doc/개표결과 정리-20대 총선 용인시갑.xlsx', 'doc/개표결과 정리-20대 총선 용인시을.xlsx', 'doc/개표결과 정리-20대 총선 용인시병.xlsx', 'doc/개표결과 정리-20대 총선 용인시정.xlsx'],
         "21대 총선": ['doc/개표결과 정리-21대 총선 용인시갑.xlsx', 'doc/개표결과 정리-21대 총선 용인시을.xlsx', 'doc/개표결과 정리-21대 총선 용인시병.xlsx', 'doc/개표결과 정리-21대 총선 용인시정.xlsx'],
@@ -347,10 +345,11 @@ if False:
         "21대 총선": ['doc/선거인수현황 정리-21대 총선 용인시갑.xlsx', 'doc/선거인수현황 정리-21대 총선 용인시을.xlsx', 'doc/선거인수현황 정리-21대 총선 용인시병.xlsx', 'doc/선거인수현황 정리-21대 총선 용인시정.xlsx'],
         "19대 대선": ['doc/선거인수현황 정리-19대 대선 기흥구.xlsx', 'doc/선거인수현황 정리-19대 대선 수지구.xlsx', 'doc/선거인수현황 정리-19대 대선 처인구.xlsx']
     }
-if False:
+
+if True:
     doc_poll_score = {}
     doc_poll_analysis = {}
-    def iter_analysis(file_results, file_books):
+    def iter_analysis(sg_id, file_results, file_books):
         file_scores = []
         file_analysises = []
         if len(file_results) == len(file_books):
@@ -361,14 +360,13 @@ if False:
                 file_scores.append(file_score)
                 file_analysises.append(file_analysis)
                 nec_analysis = na.NecAnalysis(file_result, file_book)
-
-                nec_analysis.run(doc_zone_house_info)
+                nec_analysis.run(sg_id, doc_zone_house_info)
                 nec_analysis.score.to_excel(file_score, merge_cells=False)
                 nec_analysis.na.to_excel(file_analysis, merge_cells=False)
         return file_scores, file_analysises
 
     for sg_id in sg_ids:
-        file_scores, file_analysises = iter_analysis(doc_poll_result[sg_id], doc_poll_book[sg_id])
+        file_scores, file_analysises = iter_analysis(sg_id, doc_poll_result[sg_id], doc_poll_book[sg_id])
         doc_poll_score[sg_id] = file_scores
         doc_poll_analysis[sg_id] = file_analysises
     print(doc_poll_score)

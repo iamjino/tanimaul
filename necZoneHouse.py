@@ -61,8 +61,8 @@ class NecZoneHouse:
             is_tong = self._zone_addr['통'] == house_addr.at[i, '통']
             df_place = self._zone_addr[is_dong & is_tong].reset_index(drop=True)
             if df_place.size > 0:
-                house_addr.at[i, '시'] = df_place.at[0, '시']
-                house_addr.at[i, '구'] = df_place.at[0, '구']
+                # house_addr.at[i, '시'] = df_place.at[0, '시']
+                # house_addr.at[i, '구'] = df_place.at[0, '구']
                 house_addr.at[i, '투표구명'] = df_place.at[0, '투표구명']
 
         house_addr['단지명'] = ''
@@ -71,6 +71,9 @@ class NecZoneHouse:
             is_addr = self._house_info['동이하주소'] == addr
             df_apt = self._house_info[is_addr].reset_index(drop=True)
             if df_apt.size > 0:
+                texts = df_apt.at[0, '법정동주소'].split(' ')
+                house_addr.at[i, '시'] = texts[1]
+                house_addr.at[i, '구'] = texts[2]
                 house_addr.at[i, '단지명'] = df_apt.at[0, '단지명']
 
         house_addr.to_excel('doc/임시-통리반 관할구역.xlsx', sheet_name='zone')
@@ -80,5 +83,5 @@ class NecZoneHouse:
         self.items = concise_addr.drop_duplicates(subset=['단지명'], ignore_index=True)
         print(self.items)
 
-    def to_excel(self, xlsx_name, sheet_name='sheet1'):
-        self.items.to_excel(xlsx_name, sheet_name=sheet_name)
+    # def to_excel(self, xlsx_name):
+    #     self.items.to_excel(xlsx_name, ignore_index=True)

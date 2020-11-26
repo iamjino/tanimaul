@@ -145,23 +145,23 @@ class NecAnalysis():
         self.concat_list(ratio_pres)
         self.concat_list(ratio_days)
 
-    def merge_house_info(self, doc_poll_house_info):
+    def merge_house_info(self, sg_id, doc_poll_house_info):
         df_house_infos = pd.read_excel(doc_poll_house_info)
-        df_house_info_sub1 = df_house_infos.loc[:, ['투표구명', '세대수', '동수', '전용면적 60이하', '전용면적 60-85이하', '전용면적 85-135이하', '전용면적 135초과', '단지 전용면적합']]
+        df_house_info_sub1 = df_house_infos.loc[:, [sg_id, '세대수', '동수', '전용면적 60이하', '전용면적 60-85이하', '전용면적 85-135이하', '전용면적 135초과', '단지 전용면적합']]
         df_house_info_sub1.rename(columns={'세대수': '공동주택 세대수'}, inplace=True)
-        df_house_info_group1 = df_house_info_sub1.groupby('투표구명').sum()
-        df_house_info_group2 = df_house_info_sub1.groupby('투표구명').count().copy()
+        df_house_info_group1 = df_house_info_sub1.groupby(sg_id).sum()
+        df_house_info_group2 = df_house_info_sub1.groupby(sg_id).count().copy()
         df_house_info_group2 = df_house_info_group2.loc[:, ['동수']]
         df_house_info_group2.rename(columns={'동수': '공동주택 단지수'}, inplace=True)
-        df_house_info_summary = pd.merge(df_house_info_group2, df_house_info_group1, on='투표구명')
+        df_house_info_summary = pd.merge(df_house_info_group2, df_house_info_group1, on=sg_id)
         df_house_info_summary.to_excel('group_summary.xlsx')
         
-        self.na = pd.merge(self.na, df_house_info_summary, on='투표구명')
+        self.na = pd.merge(self.na, df_house_info_summary, left_on='투표구명', right_index=True, how='left')
         self.na['공동주택 세대수 커버리지'] = self.na['공동주택 세대수'] / self.na['세대수'] * 100
         self.na['세대당 평균 관리비부과면적'] = self.na['단지 전용면적합'] / self.na['공동주택 세대수']
 
-    def run(self, doc_poll_house_info):
+    def run(self, sg_id, doc_poll_house_info):
         self.get_place_pre_sum()
         self.get_place_pre_score()
+        self.merge_house_info(sg_id, doc_poll_house_info)
         self.get_score_analysis()
-        # self.merge_house_info(doc_poll_house_info)
