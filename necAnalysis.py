@@ -59,7 +59,7 @@ class NecAnalysis():
             dong_pre_sum = dong_pre_score['선거인수']
             for place in self.na.loc[dong].index:
                 place_pre_sum = self.na.loc[(dong, place), '관내사전투표수']
-                place_pre_score = dong_pre_score / dong_pre_sum * place_pre_sum
+                place_pre_score = dong_pre_score * (place_pre_sum / dong_pre_sum)
                 place_pre_score.rename((dong, place, '관내사전투표'), inplace=True)
                 score.append(place_pre_score)
 
@@ -75,7 +75,7 @@ class NecAnalysis():
         for dong in self.dongs:
             for place in self.na.loc[dong].index:
                 place_pre_sum = self.na.loc[(dong, place), '관외사전투표수']
-                place_pre_score = gu_pre_out_score / gu_pre_sum * place_pre_sum
+                place_pre_score = gu_pre_out_score * (place_pre_sum / gu_pre_sum)
                 place_pre_score.rename((dong, place, '관외사전투표'), inplace=True)
                 score.append(place_pre_score)
 
@@ -154,11 +154,10 @@ class NecAnalysis():
         df_house_info_group2 = df_house_info_group2.loc[:, ['동수']]
         df_house_info_group2.rename(columns={'동수': '공동주택 단지수'}, inplace=True)
         df_house_info_summary = pd.merge(df_house_info_group2, df_house_info_group1, on=sg_id)
-        df_house_info_summary.to_excel('group_summary.xlsx')
-        
+
         self.na = pd.merge(self.na, df_house_info_summary, left_on='투표구명', right_index=True, how='left')
+        self.na['세대 평균 전용면적'] = self.na['단지 전용면적합'] / self.na['공동주택 세대수']
         self.na['공동주택 세대수 커버리지'] = self.na['공동주택 세대수'] / self.na['세대수'] * 100
-        self.na['세대당 평균 관리비부과면적'] = self.na['단지 전용면적합'] / self.na['공동주택 세대수']
 
     def run(self, sg_id, doc_poll_house_info):
         self.get_place_pre_sum()

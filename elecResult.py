@@ -7,11 +7,11 @@ class ElecResult:
 
     def run(self):
         df = pd.read_excel('doc/통리반 관할구역.xlsx', sheet_name='zone')
-        df_summary = df[['행정동', '법정동', '투표소명', '단지명', '주소']]
+        df_summary = df[['행정동', '법정동', '투표구명', '단지명', '주소']]
         df_summary = df_summary[df_summary['단지명'].notnull()]
         df_concise = df_summary.drop_duplicates(subset=['단지명'], ignore_index=True)
         print(df_concise)
-        df_concise.to_excel('doc/투표소별 단지 현황.xlsx')
+        df_concise.to_excel('doc/투표구별 단지 현황.xlsx')
 
         # places = {
         #     '구성동제1투',
@@ -65,7 +65,7 @@ class ElecResult:
         #     '상현2동제6투'
         # }
         # for place in places:
-        #     place_loc = df[df['투표소명'] == place]
+        #     place_loc = df[df['투표구명'] == place]
         #     grouped = place_loc.groupby(place_loc['단지명'])
         #     print(place, grouped.count().index.tolist())
         #     print(place_loc.columns)

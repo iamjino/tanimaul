@@ -30,6 +30,8 @@ class NecZoneAddress:
                 addr = addr.replace('통', '')
                 addr = addr.replace('∼', '~')
                 tongs = addr.split(',')
+                value_dong = value_dong.replace('1', '')
+                value_dong = value_dong.replace('2', '')
                 if value_dong[-1] != '동':
                     value_dong = value_dong + '동'
 

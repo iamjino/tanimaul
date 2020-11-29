@@ -138,5 +138,5 @@ class HouseInfo:
         print(' - 도로명주소만 일치하는 단지수:', self._doromatch)
         print(' - 주소가 일치하지 않는 단지수:', self._nomatch)
 
-    def to_excel(self, xlsx_name, sheet_name='sheet1'):
-        self.items.to_excel(xlsx_name, sheet_name=sheet_name)
+    # def to_excel(self, xlsx_name, sheet_name='sheet1'):
+    #     self.items.to_excel(xlsx_name, sheet_name=sheet_name)

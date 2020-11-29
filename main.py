@@ -81,7 +81,7 @@ conf_rent_rate = 'conf/전월세 전환율.xlsx
 doc_trade_price = 'doc/주택 매매 현황.xlsx'
 doc_rent_price = 'doc/주택 임대차 현황.xlsx'
 
-doc_zone_house_info = 'doc/투표구 관할단지 현황.xlsx'
+doc_house_info_zone = 'doc/공동주택 현황(투표구 포함).xlsx'
 
 
 sg_ids = ['20대 총선', '19대 대선', '21대 총선']
@@ -114,7 +114,7 @@ if False:
     kapt_info.get(apt_codes)
 
     kapt_info_final = pd.merge(kapt_list.items, kapt_info.items, on='단지코드')
-    kapt_info_final.to_excel(doc_kapt_info, ignore_index=True)
+    kapt_info_final.to_excel(doc_kapt_info, index=False)
     print(kapt_info_final)
 
 if False:
@@ -123,7 +123,7 @@ if False:
     house_info.run()
     house_info.fill_data(conf_house_info_fix)
     house_info.print()
-    house_info.to_excel(doc_house_info, ignore_index=True)
+    house_info.items.to_excel(doc_house_info, index=False)
 
 if False:
     rt_urls = {'apt_trade': 'http://openapi.molit.go.kr:8081/OpenAPI_ToolInstallPackage/service/rest/RTMSOBJSvc/getRTMSDataSvcAptTrade',
@@ -176,64 +176,9 @@ if False:
     rent_prices = postprocess_rent_prices(rent_prices)
     rent_prices.to_excel(doc_rent_price)
 
-# Reruned until here
-
 if False:
-# conf_zone_addr = {"20대 총선": ['conf/투표구 관할구역-20대 총선 기흥구.xlsx', 'conf/투표구 관할구역-20대 총선 수지구.xlsx'],
-#                   "19대 대선": ['conf/투표구 관할구역-19대 대선 기흥구.xlsx', 'conf/투표구 관할구역-19대 대선 수지구.xlsx'],
-#                   "21대 총선": ['conf/투표구 관할구역-21대 총선 기흥구.xlsx']}
-    conf_zone_addr = {"20대 총선": ['conf/투표구 관할구역-20대 총선 기흥구.xlsx'],
-                      "19대 대선": ['conf/투표구 관할구역-19대 대선 기흥구.xlsx'],
-                      "21대 총선": ['conf/투표구 관할구역-21대 총선 기흥구.xlsx']}
-    doc_zone_addr = {}
-    # doc_zone_addr = {"20대 총선": 'doc/투표소 동통주소-20대 총선.xlsx',
-    #                  "19대 대선": 'doc/투표소 동통주소-19대 대선.xlsx',
-    #                  "21대 총선": 'doc/투표소 동통주소-21대 총선.xlsx'}
-
-    def iter_nza(sg_id, file_ins):
-        file_out = 'doc/투표소 동통주소-' + sg_id + '.xlsx'
-        dfs = []
-        for file_in in file_ins[sg_id]:
-            zone_addr = nza.NecZoneAddress(sg_id, file_in)
-            dfs.append(zone_addr.items)
-        zone_addrs = pd.concat(dfs)
-        zone_addrs.to_excel(file_out, index=False)
-        return file_out
-    for sg_id in sg_ids:
-        doc_zone_addr[sg_id] = iter_nza(sg_id, conf_zone_addr)
-
-if False:
-    conf_law_addr = {"20대 총선": 'conf/용인시 통리반 설치 조례-20대 총선.xlsx',
-                     "19대 대선": 'conf/용인시 통리반 설치 조례-19대 대선.xlsx',
-                     "21대 총선": 'conf/용인시 통리반 설치 조례-21대 총선.xlsx'}
-    conf_law_addr_sheet = 'analysis'
-    conf_law_addr_fix = 'conf/용인시 통리반 설치 조례-수정.xlsx'
-
-    doc_zone_house_list = {}
-    for sg_id in sg_ids:
-        file_out = 'doc/투표구 관할단지-' + sg_id + '.xlsx'
-        zone_house = nzh.NecZoneHouse(conf_law_addr[sg_id], conf_law_addr_sheet, conf_law_addr_fix, doc_house_info, doc_zone_addr[sg_id])
-        zone_house.run()
-        zone_house.items.to_excel(file_out, index=False)
-        doc_zone_house_list[sg_id] = file_out
-
-if False:
-    # 투표소 공동주택 정보 생성
+    # 주택 매매 차트 생성: 투표구 공동주택 정보 필요(df_house_infos)
     df_house_infos = pd.read_excel(doc_house_info)
-    for sg_id in sg_ids:
-        df_zone_house = pd.read_excel(doc_zone_house_list[sg_id])
-        df_zone_house['간략 법정동주소'] = ''
-        df_zone_house.rename(columns={'투표구명': sg_id}, inplace=True)
-
-        for index, row in df_zone_house.iterrows():
-            df_zone_house.at[index, '간략 법정동주소'] = row['구'] + ' ' + row['주소']
-
-        df_zone_house_subset = df_zone_house[[sg_id, '간략 법정동주소']]
-        df_house_infos = pd.merge(df_house_infos, df_zone_house_subset, on='간략 법정동주소')
-    df_house_infos.to_excel(doc_zone_house_info, index=False)
-
-if False:
-    # 주택 매매 차트 생성: 투표소 공동주택 정보 생성 활성화 필요
     house_price_analysis = hpa.HousePriceAnalysis(doc_trade_price, start_year, start_month, end_year, end_month)
     file_path = 'doc/img/'
     for index, row in df_house_infos.iterrows():
@@ -250,7 +195,8 @@ if False:
             house_price_analysis.analysis(addr, file_path, chart_title)
 
 if False:
-    # 주택 임대차 차트 생성: 투표소 공동주택 정보 생성 활성화 필요
+    # 주택 임대차 차트 생성: 투표구 공동주택 정보 필요
+    df_house_infos = pd.read_excel(doc_house_info)
     house_price_analysis = hpa.HousePriceAnalysis(doc_rent_price, start_year, start_month, end_year, end_month)
     file_path = 'doc/img/'
     for index, row in df_house_infos.iterrows():
@@ -264,6 +210,70 @@ if False:
         chart_title = addr_full + ' 임대차'
         print(file_path + chart_title)
         house_price_analysis.analysis(addr, file_path, chart_title)
+
+# Reruned until here
+
+if False:
+# conf_zone_addr = {"20대 총선": ['conf/투표구 관할구역-20대 총선 기흥구.xlsx', 'conf/투표구 관할구역-20대 총선 수지구.xlsx'],
+#                   "19대 대선": ['conf/투표구 관할구역-19대 대선 기흥구.xlsx', 'conf/투표구 관할구역-19대 대선 수지구.xlsx'],
+#                   "21대 총선": ['conf/투표구 관할구역-21대 총선 기흥구.xlsx']}
+    conf_zone_addr = {"20대 총선": ['conf/투표구 관할구역-20대 총선 기흥구.xlsx'],
+                      "19대 대선": ['conf/투표구 관할구역-19대 대선 기흥구.xlsx'],
+                      "21대 총선": ['conf/투표구 관할구역-21대 총선 기흥구.xlsx']}
+    doc_zone_addr = {}
+
+    def iter_nza(sg_id, file_ins):
+        file_out = 'doc/투표구 관할통-' + sg_id + '.xlsx'
+        dfs = []
+        for file_in in file_ins[sg_id]:
+            zone_addr = nza.NecZoneAddress(sg_id, file_in)
+            dfs.append(zone_addr.items)
+        zone_addrs = pd.concat(dfs)
+        zone_addrs.to_excel(file_out, index=False)
+        return file_out
+    for sg_id in sg_ids:
+        doc_zone_addr[sg_id] = iter_nza(sg_id, conf_zone_addr)
+
+if False:
+    doc_zone_addr = {"20대 총선": 'doc/투표구 관할통-20대 총선.xlsx',
+                     "19대 대선": 'doc/투표구 관할통-19대 대선.xlsx',
+                     "21대 총선": 'doc/투표구 관할통-21대 총선.xlsx'}
+    conf_law_addr = {"20대 총선": 'conf/용인시 통리반 설치 조례-20대 총선.xlsx',
+                     "19대 대선": 'conf/용인시 통리반 설치 조례-19대 대선.xlsx',
+                     "21대 총선": 'conf/용인시 통리반 설치 조례-21대 총선.xlsx'}
+    conf_law_addr_sheet = 'analysis'
+    conf_law_addr_fix = 'conf/용인시 통리반 설치 조례-수정.xlsx'
+
+    doc_zone_house = {}
+    doc_zone_house_raw = {}
+    for sg_id in sg_ids:
+        zone_house = nzh.NecZoneHouse(conf_law_addr[sg_id], conf_law_addr_sheet, conf_law_addr_fix, doc_house_info, doc_zone_addr[sg_id])
+        zone_house.run()
+        file_out = 'doc/투표구 관할단지-' + sg_id + '.xlsx'
+        zone_house.items.to_excel(file_out, index=False)
+        doc_zone_house[sg_id] = file_out
+        raw_file_out = 'doc/투표구 관할단지(상세)-' + sg_id + '.xlsx'
+        zone_house.law_addr.to_excel(raw_file_out, index=False)
+        doc_zone_house_raw[sg_id] = raw_file_out
+
+if False:
+    doc_zone_house = {"20대 총선": 'doc/투표구 관할단지-20대 총선.xlsx',
+                      "19대 대선": 'doc/투표구 관할단지-19대 대선.xlsx',
+                      "21대 총선": 'doc/투표구 관할단지-21대 총선.xlsx'}
+if False:
+    # 공동주택 현황에 투표구 정보 추가
+    df_house_infos = pd.read_excel(doc_house_info)
+    for sg_id in sg_ids:
+        df_zone_house = pd.read_excel(doc_zone_house[sg_id])
+        df_zone_house['간략 법정동주소'] = ''
+        df_zone_house.rename(columns={'투표구명': sg_id}, inplace=True)
+
+        for index, row in df_zone_house.iterrows():
+            df_zone_house.at[index, '간략 법정동주소'] = row['구'] + ' ' + row['주소']
+
+        df_zone_house_subset = df_zone_house[[sg_id, '간략 법정동주소']]
+        df_house_infos = pd.merge(df_house_infos, df_zone_house_subset, on='간략 법정동주소', how='outer')
+    df_house_infos.to_excel(doc_house_info_zone, index=False)
 
 if False:
     # 선거인명부 개표결과 분석
@@ -360,7 +370,7 @@ if True:
                 file_scores.append(file_score)
                 file_analysises.append(file_analysis)
                 nec_analysis = na.NecAnalysis(file_result, file_book)
-                nec_analysis.run(sg_id, doc_zone_house_info)
+                nec_analysis.run(sg_id, doc_house_info_zone)
                 nec_analysis.score.to_excel(file_score, merge_cells=False)
                 nec_analysis.na.to_excel(file_analysis, merge_cells=False)
         return file_scores, file_analysises
