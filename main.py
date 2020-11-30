@@ -213,7 +213,7 @@ if False:
 
 # Reruned until here
 
-if False:
+if True:
 # conf_zone_addr = {"20대 총선": ['conf/투표구 관할구역-20대 총선 기흥구.xlsx', 'conf/투표구 관할구역-20대 총선 수지구.xlsx'],
 #                   "19대 대선": ['conf/투표구 관할구역-19대 대선 기흥구.xlsx', 'conf/투표구 관할구역-19대 대선 수지구.xlsx'],
 #                   "21대 총선": ['conf/투표구 관할구역-21대 총선 기흥구.xlsx']}
@@ -234,7 +234,7 @@ if False:
     for sg_id in sg_ids:
         doc_zone_addr[sg_id] = iter_nza(sg_id, conf_zone_addr)
 
-if False:
+if True:
     doc_zone_addr = {"20대 총선": 'doc/투표구 관할통-20대 총선.xlsx',
                      "19대 대선": 'doc/투표구 관할통-19대 대선.xlsx',
                      "21대 총선": 'doc/투표구 관할통-21대 총선.xlsx'}
@@ -260,7 +260,7 @@ if False:
     doc_zone_house = {"20대 총선": 'doc/투표구 관할단지-20대 총선.xlsx',
                       "19대 대선": 'doc/투표구 관할단지-19대 대선.xlsx',
                       "21대 총선": 'doc/투표구 관할단지-21대 총선.xlsx'}
-if False:
+if True:
     # 공동주택 현황에 투표구 정보 추가
     df_house_infos = pd.read_excel(doc_house_info)
     for sg_id in sg_ids:

@@ -13,7 +13,7 @@ class NecZoneHouse:
         df_temp = pd.read_excel(self.law_addr_file, sheet_name=self.law_addr_sheet, index_col=None)
         temp1 = df_temp[['행정동', '통명', '건물', '법정동', '통', '반', '읍면동', '통리명', '반의명칭', '관할구역']]
         temp1 = temp1[temp1['반의명칭'].notnull()]
-        temp1 = temp1[temp1['건물'].notnull()]
+        temp1 = temp1[temp1['통'].notnull()]
         self.law_addr = temp1.reset_index(drop=True)
 
         df_law_addr_fix = pd.read_excel(self.law_addr_file_fix, index_col=None)
@@ -21,7 +21,6 @@ class NecZoneHouse:
         addr_change = df_law_addr_fix[df_law_addr_fix['타입'] == 'change'].reset_index(drop=True)
         for i in range(self.law_addr.index.size):
             text = self.law_addr.at[i, '관할구역']
-            print(text)
             text = text.replace('(', ' ')
             text = text.replace(')', ' ')
             text = text.replace('   ', ' ')
@@ -49,8 +48,8 @@ class NecZoneHouse:
             addr = addrs[0] + ' ' + addrs[1]
             self.law_addr.at[i, '주소'] = addr
 
-            print(addr)
             self.law_addr.at[i, '법정동'] = self.law_addr.at[i, '법정동'] + '동'
+            # self.law_addr.at[i, '행정동'] = self.law_addr.at[i, '행정동'].replace(' ', '')
             # for dong_change in dong_changes:
             #     if self.law_addr.at[i, '행정동'] == dong_change:
             #         self.law_addr.at[i, '법정동'] = dong_change
@@ -58,6 +57,7 @@ class NecZoneHouse:
         self.law_addr['시'] = ''
         self.law_addr['구'] = ''
         self.law_addr['투표구명'] = ''
+        self.law_addr['행정동'] = self.law_addr['행정동'].str.replace(' ', '')
         for i in range(self.law_addr.index.size):
             is_hjdong = self._zone_addr['행정동'] == self.law_addr.at[i, '행정동']
             is_bjdong = self._zone_addr['법정동'] == self.law_addr.at[i, '법정동']
@@ -78,8 +78,6 @@ class NecZoneHouse:
                 self.law_addr.at[i, '시'] = texts[1]
                 self.law_addr.at[i, '구'] = texts[2]
                 self.law_addr.at[i, '단지명'] = df_apt.at[0, '단지명']
-
-        # self.law_addr.to_excel('doc/임시-통리반 관할구역.xlsx', sheet_name='zone')
 
         concise_addr = self.law_addr[['시', '구', '행정동', '법정동', '투표구명', '단지명', '주소']]
         concise_addr = concise_addr[concise_addr['단지명'] != '']
